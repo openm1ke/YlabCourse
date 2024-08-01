@@ -8,9 +8,9 @@ public class Car {
     private String model;
     private int year;
     private double price;
-    private String status;
+    private CarStatus status;
 
-    public Car(String brand, String model, int year, double price, String status) {
+    public Car(String brand, String model, int year, double price, CarStatus status) {
         this.id = IdGenerator.generateCarId();
         this.brand = brand;
         this.model = model;
@@ -51,11 +51,11 @@ public class Car {
         this.price = price;
     }
 
-    public String getStatus() {
+    public CarStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(CarStatus status) {
         this.status = status;
     }
 
@@ -67,7 +67,7 @@ public class Car {
                 ", model='" + model + '\'' +
                 ", year=" + year +
                 ", price=" + price +
-                ", status='" + status + '\'' +
+                ", status=" + status +
                 '}';
     }
 

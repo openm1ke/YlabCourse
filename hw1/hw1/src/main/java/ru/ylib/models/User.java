@@ -5,9 +5,9 @@ import ru.ylib.utils.IdGenerator;
 public class User {
 
     private final long id;
-    private final String login;
-    private final String password;
-    private final UserRole role;
+    private String login;
+    private String password;
+    private UserRole role;
 
     public User(String login, String password, UserRole role) {
         this.id = IdGenerator.generateUserId();
@@ -30,6 +30,21 @@ public class User {
 
     public long getId() {
         return id;
+    }
+
+
+    public void setLogin(String login) {
+        this.login = login;
+    }
+
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+
+    public void setRole(UserRole role) {
+        this.role = role;
     }
 
     @Override
