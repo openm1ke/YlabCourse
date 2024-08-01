@@ -76,4 +76,13 @@ public class UserService implements CRUDService<User> {
         }
         return null;
     }
+
+    public User findByLogin(String login) {
+        for (User user : DataStore.users) {
+            if (user.getLogin().equals(login)) {
+                return user;
+            }
+        }
+        return null;
+    }
 }
