@@ -14,12 +14,14 @@ public class OrderManager {
     private UserService userService;
     private CarService carService;
     private Scanner scanner;
+    private Menu menu;
 
-    public OrderManager(OrderService orderService, CarService carService, UserService userService, Scanner scanner) {
-        this.orderService = orderService;
-        this.userService = userService;
-        this.carService = carService;
-        this.scanner = scanner;
+    public OrderManager(Menu menu) {
+        this.orderService = menu.getOrderService();
+        this.userService = menu.getUserService();
+        this.carService = menu.getCarService();
+        this.scanner = menu.getScanner();
+        this.menu = menu;
     }
 
     public void manageOrders() {

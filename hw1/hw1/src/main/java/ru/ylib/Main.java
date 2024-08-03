@@ -37,13 +37,13 @@ public class Main {
                     if (user != null) {
                         switch (user.getRole()) {
                             case ADMIN:
-                                new AdminMenu(userService, carService, orderService, scanner).showMenu();
+                                new AdminMenu(menu).showMenu();
                                 break;
                             case USER:
                                 new UserMenu(userService, carService, scanner).showMenu();
                                 break;
                             case MANAGER:
-                                new MangerMenu(carService, scanner).showMenu();
+                                new MangerMenu(menu).showMenu();
                                 break;
                             default:
                                 break;

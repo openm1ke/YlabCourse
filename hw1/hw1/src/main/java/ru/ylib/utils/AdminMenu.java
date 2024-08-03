@@ -10,21 +10,41 @@ import java.util.List;
 import java.util.Scanner;
 
 public class AdminMenu {
-
+    private final Menu menu;
     private final UserService userService;
     private final CarService carService;
     private final Scanner scanner;
     private final CarManager carManager;
     private final OrderManager orderManager;
 
-    public AdminMenu(UserService userService, CarService carService, OrderService orderService, Scanner scanner) {
-        this.userService = userService;
-        this.carService = carService;
-        this.scanner = scanner;
-        this.orderManager = new OrderManager(orderService, carService, userService, scanner);
-        this.carManager = new CarManager(carService, scanner);
+    public AdminMenu(Menu menu) {
+        this.menu = menu;
+        this.userService = menu.getUserService();
+        this.carService = menu.getCarService();
+        this.scanner = menu.getScanner();
+        this.carManager = new CarManager(menu);
+        this.orderManager = new OrderManager(menu);
     }
 
+    public UserService getUserService() {
+        return userService;
+    }
+
+    public CarService getCarService() {
+        return carService;
+    }
+
+    public Scanner getScanner() {
+        return scanner;
+    }
+
+    public CarManager getCarManager() {
+        return carManager;
+    }
+
+    public OrderManager getOrderManager() {
+        return orderManager;
+    }
 
     public void manageUsers() {
         while(true) {

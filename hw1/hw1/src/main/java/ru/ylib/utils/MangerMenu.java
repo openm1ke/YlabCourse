@@ -9,12 +9,14 @@ public class MangerMenu {
     private CarService carService;
     private Scanner scanner;
     private CarManager carManager;
+    private Menu menu;
 
 
-    public MangerMenu(CarService carService, Scanner scanner) {
-        this.carService = carService;
-        this.scanner = scanner;
-        this.carManager = new CarManager(carService, scanner);
+    public MangerMenu(Menu menu) {
+        this.carService = menu.getCarService();
+        this.scanner = menu.getScanner();
+        this.carManager = new CarManager(menu);
+        this.menu = menu;
     }
 
     public void showMenu() {

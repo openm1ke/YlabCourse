@@ -10,12 +10,14 @@ import java.util.Scanner;
 
 public class CarManager {
 
+    private final Menu menu;
     private CarService carService;
     private Scanner scanner;
 
-    public CarManager(CarService carService, Scanner scanner) {
-        this.carService = carService;
-        this.scanner = scanner;
+    public CarManager(Menu menu) {
+        this.carService = menu.getCarService();
+        this.scanner = menu.getScanner();
+        this.menu = menu;
     }
 
     public void manageCars() {

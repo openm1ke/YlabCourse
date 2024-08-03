@@ -27,6 +27,26 @@ public class Menu {
         initializeUsers();
     }
 
+    public AdminMenu showAdminMenu() {
+        return new AdminMenu(this);
+    }
+
+    public UserService getUserService() {
+        return userService;
+    }
+
+    public CarService getCarService() {
+        return carService;
+    }
+
+    public Scanner getScanner() {
+        return scanner;
+    }
+
+    public OrderService getOrderService() {
+        return orderService;
+    }
+
     private void initializeUsers() {
         User user1 = new User("admin", "admin", UserRole.ADMIN);
         User user2 = new User("user", "user", UserRole.USER);
