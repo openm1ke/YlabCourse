@@ -4,6 +4,7 @@ import ru.ylib.models.User;
 import ru.ylib.services.CarService;
 import ru.ylib.services.UserService;
 import ru.ylib.utils.AdminMenu;
+import ru.ylib.utils.MangerMenu;
 import ru.ylib.utils.Menu;
 import ru.ylib.utils.UserMenu;
 
@@ -38,6 +39,9 @@ public class Main {
                                 break;
                             case USER:
                                 new UserMenu(userService, carService, scanner).showMenu();
+                                break;
+                            case MANAGER:
+                                new MangerMenu(carService, scanner).showMenu();
                                 break;
                             default:
                                 break;

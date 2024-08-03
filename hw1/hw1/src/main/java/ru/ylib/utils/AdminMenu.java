@@ -13,12 +13,14 @@ public class AdminMenu {
     private final UserService userService;
     private final CarService carService;
     private final Scanner scanner;
+    private final CarManager carManager;
 
 
     public AdminMenu(UserService userService, CarService carService, Scanner scanner) {
         this.userService = userService;
         this.carService = carService;
         this.scanner = scanner;
+        this.carManager = new CarManager(carService, scanner);
     }
 
 
@@ -35,29 +37,17 @@ public class AdminMenu {
             int choice = scanner.nextInt();
             scanner.nextLine();
 
-
             switch (choice) {
-                case 1:
-                    createUser();
-                    break;
-                case 2:
-                    readUser();
-                    break;
-                case 3:
-                    updateUser();
-                    break;
-                case 4:
-                    userDelete();
-                    break;
-                case 5:
-                    readAllUsers();
-                    break;
-                case 6:
+                case 1 -> createUser();
+                case 2 -> readUser();
+                case 3 -> updateUser();
+                case 4 -> deleteUser();
+                case 5 -> readAllUsers();
+                case 6 -> {
                     System.out.println("Back to main menu...");
                     return;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
-                    break;
+                }
+                default -> System.out.println("Invalid choice. Please try again.");
             }
         }
     }
@@ -69,7 +59,7 @@ public class AdminMenu {
         }
     }
 
-    private void userDelete() {
+    private void deleteUser() {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
@@ -212,7 +202,7 @@ public class AdminMenu {
                     manageUsers();
                     break;
                 case 2:
-                    manageCars();
+                    carManager.manageCars();
                     break;
                 case 3:
                     System.out.println("Back to main menu...");
