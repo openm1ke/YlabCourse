@@ -3,6 +3,7 @@ package ru.ylib.utils;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 import ru.ylib.services.CarService;
+import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
 
 import java.util.List;
@@ -14,12 +15,13 @@ public class AdminMenu {
     private final CarService carService;
     private final Scanner scanner;
     private final CarManager carManager;
+    private final OrderManager orderManager;
 
-
-    public AdminMenu(UserService userService, CarService carService, Scanner scanner) {
+    public AdminMenu(UserService userService, CarService carService, OrderService orderService, Scanner scanner) {
         this.userService = userService;
         this.carService = carService;
         this.scanner = scanner;
+        this.orderManager = new OrderManager(orderService, carService, userService, scanner);
         this.carManager = new CarManager(carService, scanner);
     }
 
@@ -191,7 +193,8 @@ public class AdminMenu {
         while(true) {
             System.out.println("1. Manage users");
             System.out.println("2. Manage cars");
-            System.out.println("3. Return to main menu");
+            System.out.println("3. Manage orders");
+            System.out.println("4. Return to main menu");
             System.out.print("Enter your choice: ");
 
             int choice = scanner.nextInt();
@@ -205,6 +208,9 @@ public class AdminMenu {
                     carManager.manageCars();
                     break;
                 case 3:
+                    orderManager.manageOrders();
+                    break;
+                case 4:
                     System.out.println("Back to main menu...");
                     return;
                 default:

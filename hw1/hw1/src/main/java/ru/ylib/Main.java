@@ -2,6 +2,7 @@ package ru.ylib;
 
 import ru.ylib.models.User;
 import ru.ylib.services.CarService;
+import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
 import ru.ylib.utils.AdminMenu;
 import ru.ylib.utils.MangerMenu;
@@ -15,9 +16,10 @@ public class Main {
 
         UserService userService = new UserService();
         CarService carService = new CarService();
+        OrderService orderService = new OrderService();
         Scanner scanner = new Scanner(System.in);
 
-        Menu menu = new Menu(userService, carService);
+        Menu menu = new Menu(userService, carService, orderService);
 
         while(true) {
 
@@ -35,7 +37,7 @@ public class Main {
                     if (user != null) {
                         switch (user.getRole()) {
                             case ADMIN:
-                                new AdminMenu(userService, carService, scanner).showMenu();
+                                new AdminMenu(userService, carService, orderService, scanner).showMenu();
                                 break;
                             case USER:
                                 new UserMenu(userService, carService, scanner).showMenu();

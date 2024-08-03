@@ -3,6 +3,7 @@ package ru.ylib.utils;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 import ru.ylib.services.CarService;
+import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
 
 import java.util.Scanner;
@@ -11,14 +12,16 @@ public class Menu {
 
     private final UserService userService;
     private final CarService carService;
+    private final OrderService orderService;
     private final Scanner scanner;
 
     protected static final String ENTER_LOGIN = "Enter your login";
     protected static final String ENTER_PASSWORD = "Enter your password";
 
-    public Menu(UserService userService, CarService carService) {
+    public Menu(UserService userService, CarService carService, OrderService orderService) {
         this.userService = userService;
         this.carService = carService;
+        this.orderService = orderService;
         this.scanner = new Scanner(System.in);
 
         initializeUsers();
