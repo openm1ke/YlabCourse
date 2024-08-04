@@ -9,6 +9,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
+import static ru.ylib.Main.logger;
+
 public class UserMenu {
 
     private final OrderService orderService;
@@ -26,8 +28,8 @@ public class UserMenu {
     }
 
     public void showMenu() {
+        logger.info("Showing User menu");
         while (true) {
-            System.out.println("Welcome, " + currentUser.getId() + "!");
             System.out.println("1. My orders");
             System.out.println("2. My cars");
             System.out.println("3. Shop cars");

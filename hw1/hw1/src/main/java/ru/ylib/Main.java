@@ -1,5 +1,7 @@
 package ru.ylib;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ylib.models.*;
 import ru.ylib.services.CarService;
 import ru.ylib.services.OrderService;
@@ -9,7 +11,12 @@ import ru.ylib.utils.Menu;
 import java.time.LocalDate;
 
 public class Main {
+
+    public static final Logger logger = LoggerFactory.getLogger(Main.class);
+
     public static void main(String[] args) {
+
+        logger.info("Starting application");
 
         UserService userService = new UserService();
         CarService carService = new CarService();
@@ -41,5 +48,7 @@ public class Main {
 
         Menu menu = new Menu(userService, carService, orderService);
         menu.showMenu();
+
+        logger.info("Application finished");
     }
 }

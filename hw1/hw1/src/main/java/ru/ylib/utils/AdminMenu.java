@@ -2,6 +2,8 @@ package ru.ylib.utils;
 
 import java.util.Scanner;
 
+import static ru.ylib.Main.logger;
+
 public class AdminMenu {
     private final Scanner scanner;
     private final CarManager carManager;
@@ -16,6 +18,7 @@ public class AdminMenu {
     }
 
     public void showMenu() {
+        logger.info("Showing Admin menu");
         while(true) {
             System.out.println("1. Manage users");
             System.out.println("2. Manage cars");

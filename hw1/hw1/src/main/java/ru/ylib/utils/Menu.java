@@ -8,6 +8,8 @@ import ru.ylib.services.UserService;
 
 import java.util.Scanner;
 
+import static ru.ylib.Main.logger;
+
 public class Menu {
 
     private final UserService userService;
@@ -28,6 +30,7 @@ public class Menu {
     }
 
     public void showMenu() {
+        logger.info("Showing Main menu");
         while(true) {
             int choice = 0;
             System.out.println("1. Authenticate");

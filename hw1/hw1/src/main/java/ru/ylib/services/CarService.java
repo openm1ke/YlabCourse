@@ -5,6 +5,8 @@ import ru.ylib.utils.DataStore;
 
 import java.util.List;
 
+import static ru.ylib.Main.logger;
+
 /**
  * This class implements the CRUDService interface for cars.
  */
@@ -18,6 +20,7 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car create(Car car) {
+        logger.info("Car created: " + car);
         DataStore.cars.add(car);
         return car;
     }
@@ -32,6 +35,7 @@ public class CarService implements CRUDService<Car> {
     public Car read(long id) {
         for (Car car : DataStore.cars) {
             if (car.getId() == id) {
+                logger.info("Car read: " + car);
                 return car;
             }
         }
@@ -53,6 +57,7 @@ public class CarService implements CRUDService<Car> {
                 c.setYear(car.getYear());
                 c.setPrice(car.getPrice());
                 c.setStatus(car.getStatus());
+                logger.info("Car updated: " + car);
                 return c;
             }
         }
@@ -69,6 +74,7 @@ public class CarService implements CRUDService<Car> {
         for (Car car : DataStore.cars) {
             if (car.getId() == id) {
                 DataStore.cars.remove(car);
+                logger.info("Car deleted: " + car);
                 break;
             }
         }
@@ -81,6 +87,7 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public List<Car> readAll() {
+        logger.info("View all cars");
         return DataStore.cars;
     }
 }

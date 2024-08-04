@@ -1,15 +1,22 @@
 package ru.ylib.services;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 import ru.ylib.utils.DataStore;
 
 import javax.xml.crypto.Data;
 import java.util.List;
+
+import static ru.ylib.Main.logger;
+
 /**
  * This class implements the CRUDService interface for User objects.
  */
 public class UserService implements CRUDService<User> {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     /**
      * Creates a new User object and adds it to the DataStore.
@@ -19,6 +26,7 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User create(User user) {
+        logger.info("User created: " + user);
         DataStore.users.add(user);
         return user;
     }
@@ -33,6 +41,7 @@ public class UserService implements CRUDService<User> {
     public User read(long id) {
         for (User user : DataStore.users) {
             if (user.getId() == id) {
+                logger.info("User read: " + user);
                 return user;
             }
         }
@@ -52,6 +61,7 @@ public class UserService implements CRUDService<User> {
                 u.setLogin(user.getLogin());
                 u.setPassword(user.getPassword());
                 u.setRole(user.getRole());
+                logger.info("User updated: " + user);
                 return u;
             }
         }
@@ -68,6 +78,7 @@ public class UserService implements CRUDService<User> {
         for (User user : DataStore.users) {
             if (user.getId() == id) {
                 DataStore.users.remove(user);
+                logger.info("User deleted: " + user);
                 break;
             }
         }
@@ -80,6 +91,7 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public List<User> readAll() {
+        logger.info("View all users");
         return DataStore.users;
     }
 
@@ -92,6 +104,7 @@ public class UserService implements CRUDService<User> {
      * @return True if the registration was successful, false if the login is already taken.
      */
     public boolean register(String login, String password, UserRole role) {
+        logger.info("User registered: " + login);
         for (User user : DataStore.users) {
             if (user.getLogin().equals(login)) {
                 return false;
@@ -109,6 +122,7 @@ public class UserService implements CRUDService<User> {
      * @return The authenticated User object, or null if authentication failed.
      */
     public User authenticate(String login, String password) {
+        logger.info("User authenticated: " + login);
         for (User user : DataStore.users) {
             if (user.getLogin().equals(login) && user.getPassword().equals(password)) {
                 return user;
@@ -124,6 +138,7 @@ public class UserService implements CRUDService<User> {
      * @return The User object with the specified login, or null if not found.
      */
     public User findByLogin(String login) {
+        logger.info("Try find user by login: " + login);
         for (User user : DataStore.users) {
             if (user.getLogin().equals(login)) {
                 return user;
