@@ -32,6 +32,13 @@
             <version>5.10.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-surefire-plugin -->
+        <dependency>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <version>3.3.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -57,6 +64,19 @@
                             <mainClass>ru.ylib.Main</mainClass>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.3.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestCase.java</include>
+                    </includes>
                 </configuration>
             </plugin>
         </plugins>
