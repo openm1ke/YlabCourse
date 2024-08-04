@@ -119,7 +119,7 @@ public class UserMenu {
             return;
         }
         Order order = orderService.readByCarId(carId);
-        if (order != null && order.getUserId() == currentUser.getId() && order.getStatus() == OrderStatus.COMPLETED && order.getType() == OrderType.BUY) {
+        if (order != null && order.getUserId() == currentUser.getId() && order.getStatus() == OrderStatus.COMPLETED) {
             Car car = carService.read(order.getCarId());
             System.out.println(car);
             // создаем заказ на обслуживание
@@ -196,5 +196,4 @@ public class UserMenu {
             cancelUserOrder();
         }
     }
-
 }

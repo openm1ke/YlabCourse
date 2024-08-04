@@ -9,19 +9,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Scanner;
 
+import static ru.ylib.utils.Menu.INVALID_CHOICE;
+
 public class OrderManager {
-    private OrderService orderService;
-    private UserService userService;
-    private CarService carService;
-    private Scanner scanner;
-    private Menu menu;
+    private final OrderService orderService;
+    private final UserService userService;
+    private final CarService carService;
+    private final Scanner scanner;
+    private final User currentUser;
 
     public OrderManager(Menu menu) {
         this.orderService = menu.getOrderService();
         this.userService = menu.getUserService();
         this.carService = menu.getCarService();
         this.scanner = menu.getScanner();
-        this.menu = menu;
+        this.currentUser = menu.getCurrentUser();
     }
 
     public void manageOrders() {
@@ -47,13 +49,19 @@ public class OrderManager {
                     System.out.println("Back to main menu...");
                     return;
                 }
-                default -> System.out.println("Invalid choice. Please try again.");
+                default -> System.out.println(INVALID_CHOICE);
             }
         }
     }
 
 
     private void createOrder() {
+
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            System.out.println("Only administrators can create orders.");
+            return;
+        }
+
         while(true) {
             System.out.println("Enter user id: ");
             long userId = scanner.nextLong();
@@ -79,6 +87,8 @@ public class OrderManager {
             System.out.println("Order created successfully.");
             System.out.println(order);
 
+            updateCarStatus(order);
+
             break;
         }
     }
@@ -97,7 +107,7 @@ public class OrderManager {
             if (choice >= 1 && choice <= OrderStatus.values().length) {
                 return OrderStatus.values()[choice - 1];
             } else {
-                System.out.println("Invalid choice. Please try again.");
+                System.out.println(INVALID_CHOICE);
             }
         }
     }
@@ -116,7 +126,7 @@ public class OrderManager {
             if (choice >= 1 && choice <= OrderType.values().length) {
                 return OrderType.values()[choice - 1];
             } else {
-                System.out.println("Invalid choice. Please try again.");
+                System.out.println(INVALID_CHOICE);
             }
         }
     }
@@ -137,36 +147,59 @@ public class OrderManager {
         long id = scanner.nextLong();
         Order order = orderService.read(id);
         if(order != null) {
-            System.out.println("Enter new user id: ");
-            long newUserId = scanner.nextLong();
-            scanner.nextLine();
-            order.setUserId(newUserId);
-
-            System.out.println("Enter new car id: ");
-            long newCarId = scanner.nextLong();
-            scanner.nextLine();
-            order.setCarId(newCarId);
-
+            // изменяем только статус
             System.out.println("Enter new order status: ");
             OrderStatus newOrderStatus = selectOrderStatus();
             order.setStatus(newOrderStatus);
 
-            System.out.println("Enter new order type: ");
-            OrderType newOrderType = selectOrderType();
-            order.setType(newOrderType);
+            // если пользователь админ то можем менять userId и carId и orderType
+            if(currentUser.getRole() == UserRole.ADMIN) {
+                System.out.println("Enter new user id: ");
+                long newUserId = scanner.nextLong();
+                scanner.nextLine();
+                order.setUserId(newUserId);
 
-            LocalDate newOrderDate = LocalDate.now();
-            order.setOrderDate(newOrderDate);
+                System.out.println("Enter new car id: ");
+                long newCarId = scanner.nextLong();
+                scanner.nextLine();
+                order.setCarId(newCarId);
+
+                System.out.println("Enter new order type: ");
+                OrderType newOrderType = selectOrderType();
+                order.setType(newOrderType);
+            }
 
             orderService.update(order);
             System.out.println("Order updated successfully.");
             System.out.println(order);
+
+            updateCarStatus(order);
         } else {
             System.out.println("Order not found!");
         }
     }
 
+    private void updateCarStatus(Order order) {
+        if(order.getType() == OrderType.BUY) {
+            Car car = carService.read(order.getCarId());
+            if(order.getStatus() == OrderStatus.CANCELED) {
+                car.setStatus(CarStatus.AVAILABLE);
+            } else if (order.getStatus() == OrderStatus.COMPLETED) {
+                car.setStatus(CarStatus.SOLD);
+            } else {
+                car.setStatus(CarStatus.RESERVED);
+            }
+            carService.update(car);
+        }
+    }
+
     private void deleteOrder() {
+
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            System.out.println("Only administrators can delete orders.");
+            return;
+        }
+
         System.out.println("Enter order id: ");
         long id = scanner.nextLong();
         Order order = orderService.read(id);

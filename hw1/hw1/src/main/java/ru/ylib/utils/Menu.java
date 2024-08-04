@@ -18,6 +18,7 @@ public class Menu {
 
     protected static final String ENTER_LOGIN = "Enter your login";
     protected static final String ENTER_PASSWORD = "Enter your password";
+    protected static final String INVALID_CHOICE = "Invalid choice. Please try again.";
 
     public Menu(UserService userService, CarService carService, OrderService orderService) {
         this.userService = userService;
@@ -37,7 +38,7 @@ public class Menu {
             try {
                 choice = scanner.nextInt();
             } catch (Exception e) {
-                System.out.println("Invalid choice. Please try again.");
+                System.out.println(INVALID_CHOICE);
                 scanner.nextLine();
                 continue;
             }
@@ -72,7 +73,7 @@ public class Menu {
                     System.exit(0);
                     return;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    System.out.println(INVALID_CHOICE);
                     break;
             }
         }

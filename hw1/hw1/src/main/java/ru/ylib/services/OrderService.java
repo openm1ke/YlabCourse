@@ -1,6 +1,7 @@
 package ru.ylib.services;
 
 import ru.ylib.models.Order;
+import ru.ylib.models.OrderType;
 import ru.ylib.utils.DataStore;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class OrderService implements CRUDService<Order> {
 
     public Order readByCarId(long carId) {
         for (Order order : DataStore.orders) {
-            if (order.getCarId() == carId) {
+            if (order.getCarId() == carId && order.getType() == OrderType.BUY) {
                 return order;
             }
         }
