@@ -18,7 +18,17 @@
 
 Запуск приложения
 
-`java -jar ./target/hw1-1.0-SNAPSHOT.jar`
+```bash 
+java -jar ./target/hw1-1.0-SNAPSHOT.jar
+```
+
+Запуск тестов
+
+`mvn test`
+
+Создать файл документации
+
+`mvn javadoc:javadoc`
 
 ---
 
