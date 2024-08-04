@@ -52,4 +52,13 @@ public class OrderService implements CRUDService<Order> {
     public List<Order> readAll() {
         return DataStore.orders;
     }
+
+    public Order readByCarId(long carId) {
+        for (Order order : DataStore.orders) {
+            if (order.getCarId() == carId) {
+                return order;
+            }
+        }
+        return null;
+    }
 }

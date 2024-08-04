@@ -14,6 +14,7 @@ public class Menu {
     private final CarService carService;
     private final OrderService orderService;
     private final Scanner scanner;
+    private User currentUser;
 
     protected static final String ENTER_LOGIN = "Enter your login";
     protected static final String ENTER_PASSWORD = "Enter your password";
@@ -46,12 +47,13 @@ public class Menu {
                 case 1:
                     User user = this.authenticateUser();
                     if (user != null) {
+                        currentUser = user;
                         switch (user.getRole()) {
                             case ADMIN:
                                 new AdminMenu(this).showMenu();
                                 break;
                             case USER:
-                                new UserMenu(userService, carService, scanner).showMenu();
+                                new UserMenu(this).showMenu();
                                 break;
                             case MANAGER:
                                 new ManagerMenu(this).showMenu();
@@ -125,5 +127,9 @@ public class Menu {
             }
             System.out.println("Invalid login or password. Please try again.");
         }
+    }
+
+    public User getCurrentUser() {
+        return currentUser;
     }
 }

@@ -16,8 +16,9 @@ public class Main {
         OrderService orderService = new OrderService();
 
         User user1 = new User("admin", "admin", UserRole.ADMIN);
-        User user2 = new User("user", "user", UserRole.USER);
-        User user3 = new User("manager", "manager", UserRole.MANAGER);
+        User user2 = new User("manager", "manager", UserRole.MANAGER);
+        User user3 = new User("user", "user", UserRole.USER);
+
         userService.create(user1);
         userService.create(user2);
         userService.create(user3);
@@ -29,7 +30,7 @@ public class Main {
         carService.create(car2);
         carService.create(car3);
 
-        Order order1 = new Order(OrderStatus.CREATED, user3.getId(), car1.getId(), OrderType.BUY, LocalDate.now());
+        Order order1 = new Order(OrderStatus.CREATED, car1.getId(), user3.getId(), OrderType.BUY, LocalDate.now());
         orderService.create(order1);
 
         order1.setStatus(OrderStatus.COMPLETED);
