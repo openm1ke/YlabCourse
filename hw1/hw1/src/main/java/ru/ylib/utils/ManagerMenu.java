@@ -1,22 +1,17 @@
 package ru.ylib.utils;
 
-import ru.ylib.services.CarService;
-
 import java.util.Scanner;
 
-public class MangerMenu {
+public class ManagerMenu {
 
-    private CarService carService;
-    private Scanner scanner;
-    private CarManager carManager;
-    private Menu menu;
+    private final Scanner scanner;
+    private final CarManager carManager;
+    private final OrderManager orderManager;
 
-
-    public MangerMenu(Menu menu) {
-        this.carService = menu.getCarService();
+    public ManagerMenu(Menu menu) {
         this.scanner = menu.getScanner();
         this.carManager = new CarManager(menu);
-        this.menu = menu;
+        this.orderManager = new OrderManager(menu);
     }
 
     public void showMenu() {
@@ -32,7 +27,7 @@ public class MangerMenu {
                     carManager.manageCars();
                     break;
                 case 2:
-                    //manageOrders();
+                    orderManager.manageOrders();
                     break;
                 case 3:
                     System.out.println("Back to main menu...");

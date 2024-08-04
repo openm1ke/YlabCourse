@@ -10,14 +10,12 @@ import java.util.Scanner;
 
 public class CarManager {
 
-    private final Menu menu;
-    private CarService carService;
-    private Scanner scanner;
+    private final CarService carService;
+    private final Scanner scanner;
 
     public CarManager(Menu menu) {
         this.carService = menu.getCarService();
         this.scanner = menu.getScanner();
-        this.menu = menu;
     }
 
     public void manageCars() {
@@ -33,32 +31,16 @@ public class CarManager {
         scanner.nextLine();
 
         switch (choice) {
-            case 1:
-                System.out.println("create car");
-                createCar();
-                break;
-            case 2:
-                System.out.println("read car");
-                readCar();
-                break;
-            case 3:
-                System.out.println("update car");
-                updateCar();
-                break;
-            case 4:
-                System.out.println("delete car");
-                deleteCar();
-                break;
-            case 5:
-                System.out.println("readall cars");
-                readAllCars();
-                break;
-            case 6:
+            case 1 -> createCar();
+            case 2 -> readCar();
+            case 3 -> updateCar();
+            case 4 -> deleteCar();
+            case 5 -> readAllCars();
+            case 6 -> {
                 System.out.println("Back to main menu...");
                 return;
-            default:
-                System.out.println("Invalid choice. Please try again.");
-                break;
+            }
+            default -> System.out.println("Invalid choice. Please try again.");
         }
     }
 
@@ -164,7 +146,6 @@ public class CarManager {
             int choice = scanner.nextInt();
             scanner.nextLine();
 
-
             if (choice >= 1 && choice <= UserRole.values().length) {
                 return CarStatus.values()[choice - 1];
             } else {
@@ -172,7 +153,4 @@ public class CarManager {
             }
         }
     }
-
-
-
 }

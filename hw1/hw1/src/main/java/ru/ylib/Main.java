@@ -1,15 +1,12 @@
 package ru.ylib;
 
-import ru.ylib.models.User;
+import ru.ylib.models.*;
 import ru.ylib.services.CarService;
 import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
-import ru.ylib.utils.AdminMenu;
-import ru.ylib.utils.MangerMenu;
 import ru.ylib.utils.Menu;
-import ru.ylib.utils.UserMenu;
 
-import java.util.Scanner;
+import java.time.LocalDate;
 
 public class Main {
     public static void main(String[] args) {
@@ -17,51 +14,31 @@ public class Main {
         UserService userService = new UserService();
         CarService carService = new CarService();
         OrderService orderService = new OrderService();
-        Scanner scanner = new Scanner(System.in);
+
+        User user1 = new User("admin", "admin", UserRole.ADMIN);
+        User user2 = new User("user", "user", UserRole.USER);
+        User user3 = new User("manager", "manager", UserRole.MANAGER);
+        userService.create(user1);
+        userService.create(user2);
+        userService.create(user3);
+
+        Car car1 = new Car("BMW", "X5", 2020, 50000, CarStatus.AVAILABLE);
+        Car car2 = new Car("Mercedes-Benz", "C-class", 2021, 60000, CarStatus.AVAILABLE);
+        Car car3 = new Car("Toyota", "Camry", 2022, 70000, CarStatus.AVAILABLE);
+        carService.create(car1);
+        carService.create(car2);
+        carService.create(car3);
+
+        Order order1 = new Order(OrderStatus.CREATED, user3.getId(), car1.getId(), OrderType.BUY, LocalDate.now());
+        orderService.create(order1);
+
+        order1.setStatus(OrderStatus.COMPLETED);
+        orderService.update(order1);
+
+        car1.setStatus(CarStatus.SOLD);
+        carService.update(car1);
 
         Menu menu = new Menu(userService, carService, orderService);
-
-        while(true) {
-
-            System.out.println("1. Authenticate");
-            System.out.println("2. Registration");
-            System.out.println("3. Exit");
-            System.out.print("Enter your choice: ");
-
-            int choice = scanner.nextInt();
-            scanner.nextLine();
-
-            switch (choice) {
-                case 1:
-                    User user = menu.authenticateUser();
-                    if (user != null) {
-                        switch (user.getRole()) {
-                            case ADMIN:
-                                new AdminMenu(menu).showMenu();
-                                break;
-                            case USER:
-                                new UserMenu(userService, carService, scanner).showMenu();
-                                break;
-                            case MANAGER:
-                                new MangerMenu(menu).showMenu();
-                                break;
-                            default:
-                                break;
-                        }
-                    }
-                    break;
-                case 2:
-                    menu.registerUser();
-                    break;
-                case 3:
-                    System.out.println("Goodbye!");
-                    scanner.close();
-                    System.exit(0);
-                    return;
-                default:
-                    System.out.println("Invalid choice. Please try again.");
-                    break;
-            }
-        }
+        menu.showMenu();
     }
 }

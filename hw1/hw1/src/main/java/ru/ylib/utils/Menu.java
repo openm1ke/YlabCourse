@@ -23,8 +23,57 @@ public class Menu {
         this.carService = carService;
         this.orderService = orderService;
         this.scanner = new Scanner(System.in);
+    }
 
-        initializeUsers();
+    public void showMenu() {
+        while(true) {
+            int choice = 0;
+            System.out.println("1. Authenticate");
+            System.out.println("2. Registration");
+            System.out.println("3. Exit");
+            System.out.print("Enter your choice: ");
+
+            try {
+                choice = scanner.nextInt();
+            } catch (Exception e) {
+                System.out.println("Invalid choice. Please try again.");
+                scanner.nextLine();
+                continue;
+            }
+            scanner.nextLine();
+
+            switch (choice) {
+                case 1:
+                    User user = this.authenticateUser();
+                    if (user != null) {
+                        switch (user.getRole()) {
+                            case ADMIN:
+                                new AdminMenu(this).showMenu();
+                                break;
+                            case USER:
+                                new UserMenu(userService, carService, scanner).showMenu();
+                                break;
+                            case MANAGER:
+                                new ManagerMenu(this).showMenu();
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    break;
+                case 2:
+                    this.registerUser();
+                    break;
+                case 3:
+                    System.out.println("Goodbye!");
+                    scanner.close();
+                    System.exit(0);
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+                    break;
+            }
+        }
     }
 
     public AdminMenu showAdminMenu() {
@@ -45,15 +94,6 @@ public class Menu {
 
     public OrderService getOrderService() {
         return orderService;
-    }
-
-    private void initializeUsers() {
-        User user1 = new User("admin", "admin", UserRole.ADMIN);
-        User user2 = new User("user", "user", UserRole.USER);
-        User user3 = new User("manager", "manager", UserRole.MANAGER);
-        userService.create(user1);
-        userService.create(user2);
-        userService.create(user3);
     }
 
     public void registerUser() {

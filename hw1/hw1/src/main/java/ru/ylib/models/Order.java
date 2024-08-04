@@ -5,7 +5,7 @@ import ru.ylib.utils.IdGenerator;
 import java.time.LocalDate;
 
 public class Order {
-    private long id;
+    private final long id;
     private OrderStatus status;
     private long carId;
     private long userId;
@@ -18,7 +18,7 @@ public class Order {
         this.userId = userId;
         this.type = type;
         this.orderDate = orderDate;
-        this.id = IdGenerator.generateUserId();
+        this.id = IdGenerator.generateOrderId();
     }
 
     public void setUserId(long userId) {
@@ -59,5 +59,21 @@ public class Order {
 
     public OrderStatus getStatus() {
         return status;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "id=" + id +
+                ", status=" + status +
+                ", carId=" + carId +
+                ", userId=" + userId +
+                ", type=" + type +
+                ", orderDate=" + orderDate +
+                '}';
+    }
+
+    public long getId() {
+        return id;
     }
 }
