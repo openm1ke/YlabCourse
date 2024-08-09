@@ -20,7 +20,7 @@ class CarServiceTest {
     }
 
     @Test
-    public void testCreate() {
+    void testCreate() {
         Car car = new Car("BMW", "X5", 2022, 100000, CarStatus.AVAILABLE);
         carService.create(car);
         List<Car> cars = carService.readAll();

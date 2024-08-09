@@ -1,9 +1,10 @@
 package ru.ylib.services;
 
 import ru.ylib.models.Car;
-import ru.ylib.utils.DataStore;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ru.ylib.Main.logger;
 
@@ -12,6 +13,7 @@ import static ru.ylib.Main.logger;
  */
 public class CarService implements CRUDService<Car> {
 
+    private final Map<Long, Car> carMap = new HashMap<>();
     /**
      * Creates a new car and adds it to the DataStore.
      *
@@ -20,8 +22,8 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car create(Car car) {
-        logger.info("Car created: " + car);
-        DataStore.cars.add(car);
+        carMap.put(car.getId(), car);
+        logger.info("Car created: {}", car);
         return car;
     }
 
@@ -33,13 +35,9 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car read(long id) {
-        for (Car car : DataStore.cars) {
-            if (car.getId() == id) {
-                logger.info("Car read: " + car);
-                return car;
-            }
-        }
-        return null;
+        Car car = carMap.get(id);
+        logger.info("Car read: {}", id);
+        return car;
     }
 
     /**
@@ -50,16 +48,10 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car update(Car car) {
-        for (Car c : DataStore.cars) {
-            if (c.getId() == car.getId()) {
-                c.setBrand(car.getBrand());
-                c.setModel(car.getModel());
-                c.setYear(car.getYear());
-                c.setPrice(car.getPrice());
-                c.setStatus(car.getStatus());
-                logger.info("Car updated: " + car);
-                return c;
-            }
+        if(carMap.containsKey(car.getId())) {
+            carMap.put(car.getId(), car);
+            logger.info("Car updated: {}", car);
+            return car;
         }
         return null;
     }
@@ -71,12 +63,9 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public void delete(long id) {
-        for (Car car : DataStore.cars) {
-            if (car.getId() == id) {
-                DataStore.cars.remove(car);
-                logger.info("Car deleted: " + car);
-                break;
-            }
+        Car car = carMap.remove(id);
+        if(car == null) {
+            logger.info("Car not found: {}", id);
         }
     }
 
@@ -88,6 +77,6 @@ public class CarService implements CRUDService<Car> {
     @Override
     public List<Car> readAll() {
         logger.info("View all cars");
-        return DataStore.cars;
+        return List.copyOf(carMap.values());
     }
 }

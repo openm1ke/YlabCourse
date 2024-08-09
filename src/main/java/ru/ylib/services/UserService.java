@@ -1,13 +1,11 @@
 package ru.ylib.services;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
-import ru.ylib.utils.DataStore;
 
-import javax.xml.crypto.Data;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ru.ylib.Main.logger;
 
@@ -16,7 +14,7 @@ import static ru.ylib.Main.logger;
  */
 public class UserService implements CRUDService<User> {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final Map<Long, User> userMap = new HashMap<>();
 
     /**
      * Creates a new User object and adds it to the DataStore.
@@ -26,8 +24,8 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User create(User user) {
-        logger.info("User created: " + user);
-        DataStore.users.add(user);
+        userMap.put(user.getId(), user);
+        logger.info("User created: {}", user);
         return user;
     }
 
@@ -39,13 +37,8 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User read(long id) {
-        for (User user : DataStore.users) {
-            if (user.getId() == id) {
-                logger.info("User read: " + user);
-                return user;
-            }
-        }
-        return null;
+        logger.info("User read: {}", id);
+        return userMap.get(id);
     }
 
     /**
@@ -56,14 +49,10 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User update(User user) {
-        for (User u : DataStore.users) {
-            if (u.getId() == user.getId()) {
-                u.setLogin(user.getLogin());
-                u.setPassword(user.getPassword());
-                u.setRole(user.getRole());
-                logger.info("User updated: " + user);
-                return u;
-            }
+        if (userMap.containsKey(user.getId())) {
+            userMap.put(user.getId(), user);
+            logger.info("User updated: {}", user);
+            return user;
         }
         return null;
     }
@@ -75,13 +64,8 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public void delete(long id) {
-        for (User user : DataStore.users) {
-            if (user.getId() == id) {
-                DataStore.users.remove(user);
-                logger.info("User deleted: " + user);
-                break;
-            }
-        }
+        userMap.remove(id);
+        logger.info("User deleted: {}", id);
     }
 
     /**
@@ -92,7 +76,7 @@ public class UserService implements CRUDService<User> {
     @Override
     public List<User> readAll() {
         logger.info("View all users");
-        return DataStore.users;
+        return List.copyOf(userMap.values());
     }
 
     /**
@@ -104,14 +88,19 @@ public class UserService implements CRUDService<User> {
      * @return True if the registration was successful, false if the login is already taken.
      */
     public boolean register(String login, String password, UserRole role) {
-        logger.info("User registered: " + login);
-        for (User user : DataStore.users) {
-            if (user.getLogin().equals(login)) {
-                return false;
-            }
+        logger.info("Try register user with login: {}", login);
+        if (login == null || password == null) {
+            return false;
         }
-        create(new User(login, password, role));
-        return true;
+
+        if (findByLogin(login) != null) {
+            return false;
+        } else {
+            User user = new User(login, password, role);
+            userMap.put(user.getId(), user);
+            logger.info("User registered: {}", user);
+            return true;
+        }
     }
 
     /**
@@ -122,13 +111,8 @@ public class UserService implements CRUDService<User> {
      * @return The authenticated User object, or null if authentication failed.
      */
     public User authenticate(String login, String password) {
-        logger.info("User authenticated: " + login);
-        for (User user : DataStore.users) {
-            if (user.getLogin().equals(login) && user.getPassword().equals(password)) {
-                return user;
-            }
-        }
-        return null;
+        logger.info("Try authenticate user with login: {}", login);
+        return userMap.values().stream().filter(user -> user.getLogin().equals(login) && user.getPassword().equals(password)).findFirst().orElse(null);
     }
 
     /**
@@ -138,12 +122,7 @@ public class UserService implements CRUDService<User> {
      * @return The User object with the specified login, or null if not found.
      */
     public User findByLogin(String login) {
-        logger.info("Try find user by login: " + login);
-        for (User user : DataStore.users) {
-            if (user.getLogin().equals(login)) {
-                return user;
-            }
-        }
-        return null;
+        logger.info("Try find user by login: {}", login);
+        return userMap.values().stream().filter(user -> user.getLogin().equals(login)).findFirst().orElse(null);
     }
 }

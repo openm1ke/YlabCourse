@@ -2,17 +2,20 @@ package ru.ylib.services;
 
 import ru.ylib.models.Order;
 import ru.ylib.models.OrderType;
-import ru.ylib.utils.DataStore;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static ru.ylib.Main.logger;
+
 
 /**
  * Implementation of the CRUDService interface for managing orders.
  */
 public class OrderService implements CRUDService<Order> {
 
+    private final Map<Long, Order> orderMap = new HashMap<>();
     /**
      * Creates a new order and adds it to the DataStore.
      *
@@ -21,8 +24,8 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order create(Order order) {
-        logger.info("Order created: " + order);
-        DataStore.orders.add(order);
+        orderMap.put(order.getId(), order);
+        logger.info("Order created: {}", order);
         return order;
     }
 
@@ -34,13 +37,9 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order read(long id) {
-        for (Order order : DataStore.orders) {
-            if (order.getId() == id) {
-                logger.info("Order read: " + order);
-                return order;
-            }
-        }
-        return null;
+        Order order = orderMap.get(id);
+        logger.info("Order {} read: {}", id, order);
+        return order;
     }
 
     /**
@@ -51,16 +50,10 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order update(Order order) {
-        for(Order o : DataStore.orders) {
-            if(o.getId() == order.getId()) {
-                o.setCarId(order.getCarId());
-                o.setUserId(order.getUserId());
-                o.setOrderDate(order.getOrderDate());
-                o.setType(order.getType());
-                o.setStatus(order.getStatus());
-                logger.info("Order updated: " + order);
-                return o;
-            }
+        if(orderMap.containsKey(order.getId())) {
+            orderMap.put(order.getId(), order);
+            logger.info("Order updated: {}", order);
+            return order;
         }
         return null;
     }
@@ -72,12 +65,9 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public void delete(long id) {
-        for (Order order : DataStore.orders) {
-            if (order.getId() == id) {
-                DataStore.orders.remove(order);
-                logger.info("Order deleted: " + order);
-                break;
-            }
+        Order order = orderMap.remove(id);
+        if(order == null) {
+            logger.info("Order not found: {}", id);
         }
     }
 
@@ -89,7 +79,7 @@ public class OrderService implements CRUDService<Order> {
     @Override
     public List<Order> readAll() {
         logger.info("View all orders");
-        return DataStore.orders;
+        return List.copyOf(orderMap.values());
     }
 
     /**
@@ -99,12 +89,12 @@ public class OrderService implements CRUDService<Order> {
      * @return The order with the given car ID and type "BUY", or null if not found.
      */
     public Order readByCarId(long carId) {
-        logger.info("View orders by car ID: " + carId);
-        for (Order order : DataStore.orders) {
-            if (order.getCarId() == carId && order.getType() == OrderType.BUY) {
-                return order;
-            }
-        }
-        return null;
+        logger.info("View orders by car ID: {}", carId);
+        return orderMap
+                .values()
+                .stream()
+                .filter(order -> order.getCarId() == carId && order.getType() == OrderType.BUY)
+                .findFirst()
+                .orElse(null);
     }
 }
