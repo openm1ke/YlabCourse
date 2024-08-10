@@ -55,7 +55,7 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = userService.findByLogin(login);
+            User user = null; //userService.findByLogin(login);
             if (user != null) {
                 userService.delete(user.getId());
                 System.out.printf("User deleted successfully.");
@@ -68,7 +68,7 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = userService.findByLogin(login);
+            User user = null; //userService.findByLogin(login);
             if (user != null) {
                 System.out.println("Enter new password:");
                 String password = scanner.nextLine();
@@ -87,7 +87,7 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = userService.findByLogin(login);
+            User user = null; //userService.findByLogin(login);
             if (user != null) {
                 System.out.println(user);
                 return;

@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: carservice
+      changes:
+        - sql:
+            dbms: postgres
+            sql: "CREATE SCHEMA IF NOT EXISTS liquibase;"
+        - sql:
+            dbms: postgres
+            sql: "CREATE SCHEMA IF NOT EXISTS app;"

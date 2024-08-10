@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: src/main/resources/db/changelog/db.changelog-0-create-schemas.yaml
+  - include:
+      file: src/main/resources/db/changelog/db.changelog-1-create-tables.yaml
+  - include:
+      file: src/main/resources/db/changelog/db.changelog-2-insert-data.yaml

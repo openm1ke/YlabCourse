@@ -18,7 +18,9 @@
         <lombok.version>1.18.34</lombok.version>
         <junit.version>5.10.2</junit.version>
         <slf4j.version>1.7.32</slf4j.version>
-        <logback.version>1.2.6</logback.version>
+        <logback.version>1.4.12</logback.version>
+        <postgresql.version>42.7.3</postgresql.version>
+        <liquibase.version>4.29.1</liquibase.version>
 
         <!-- Версии плагинов -->
         <maven.compiler.plugin.version>3.8.1</maven.compiler.plugin.version>
@@ -26,6 +28,7 @@
         <maven.surefire.plugin.version>3.3.1</maven.surefire.plugin.version>
         <maven.javadoc.plugin.version>3.3.1</maven.javadoc.plugin.version>
         <maven.shade.plugin.version>3.2.4</maven.shade.plugin.version>
+        <maven.liquibase.plugin.version>4.29.1</maven.liquibase.plugin.version>
     </properties>
 
     <dependencies>
@@ -65,6 +68,20 @@
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <!-- JDBC PostgreSQL Driver -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>${postgresql.version}</version>
+        </dependency>
+
+        <!-- Liquibase for database migrations -->
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase.version}</version>
         </dependency>
     </dependencies>
 
@@ -144,6 +161,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.liquibase</groupId>
+                <artifactId>liquibase-maven-plugin</artifactId>
+                <version>${maven.liquibase.plugin.version}</version>
+                <configuration>
+                    <changeLogFile>src/main/resources/db/changelog/db.changelog-master.yaml</changeLogFile>
+                    <propertyFile>src/main/resources/liquibase.properties</propertyFile>
+                </configuration>
             </plugin>
         </plugins>
     </build>

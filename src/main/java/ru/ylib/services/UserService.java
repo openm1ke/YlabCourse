@@ -3,9 +3,13 @@ package ru.ylib.services;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 
-import java.util.HashMap;
+import java.sql.*;
+
+import ru.ylib.utils.DatabaseConnection;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import static ru.ylib.Main.logger;
 
@@ -14,18 +18,28 @@ import static ru.ylib.Main.logger;
  */
 public class UserService implements CRUDService<User> {
 
-    private final Map<Long, User> userMap = new HashMap<>();
+    private final Connection connection;
 
-    /**
-     * Creates a new User object and adds it to the DataStore.
-     *
-     * @param user The User object to create.
-     * @return The created User object.
-     */
+    public UserService(Connection connection) {
+        this.connection = connection;
+    }
+
     @Override
     public User create(User user) {
-        userMap.put(user.getId(), user);
-        logger.info("User created: {}", user);
+        String sql = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, user.getLogin());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getRole().name());
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                user.setId(rs.getLong("id"));
+                logger.info("User created: {}", user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            logger.error("Error creating user", e);
+        }
         return user;
     }
 
@@ -37,8 +51,20 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User read(long id) {
-        logger.info("User read: {}", id);
-        return userMap.get(id);
+        String sql = "SELECT * FROM app.user WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return mapRowToUser(rs);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**
@@ -49,12 +75,21 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User update(User user) {
-        if (userMap.containsKey(user.getId())) {
-            userMap.put(user.getId(), user);
-            logger.info("User updated: {}", user);
+        String sql = "UPDATE app.user SET login = ?, password = ?, role = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, user.getLogin());
+            pstmt.setString(2, user.getPassword());
+            pstmt.setString(3, user.getRole().name());
+            pstmt.setLong(4, user.getId());
+
+            pstmt.executeUpdate();
             return user;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
         }
-        return null;
     }
 
     /**
@@ -64,8 +99,15 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public void delete(long id) {
-        userMap.remove(id);
-        logger.info("User deleted: {}", id);
+        String sql = "DELETE FROM app.user WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setLong(1, id);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -75,8 +117,22 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public List<User> readAll() {
-        logger.info("View all users");
-        return List.copyOf(userMap.values());
+        List<User> users = new ArrayList<>();
+        String sql = "SELECT * FROM app.user";
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                User user = new User();
+                user.setId(rs.getLong("id"));
+                user.setLogin(rs.getString("login"));
+                user.setPassword(rs.getString("password"));
+                user.setRole(UserRole.valueOf(rs.getString("role")));
+                users.add(user);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
     }
 
     /**
@@ -87,20 +143,22 @@ public class UserService implements CRUDService<User> {
      * @param role The role of the User object.
      * @return True if the registration was successful, false if the login is already taken.
      */
-    public boolean register(String login, String password, UserRole role) {
-        logger.info("Try register user with login: {}", login);
-        if (login == null || password == null) {
-            return false;
-        }
+    public Optional<User> register(String login, String password, UserRole role) {
+        String sql = "SELECT * FROM app.user WHERE login = ? AND password = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-        if (findByLogin(login) != null) {
-            return false;
-        } else {
-            User user = new User(login, password, role);
-            userMap.put(user.getId(), user);
-            logger.info("User registered: {}", user);
-            return true;
+            pstmt.setString(1, login);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
+        return Optional.empty();
     }
 
     /**
@@ -110,9 +168,22 @@ public class UserService implements CRUDService<User> {
      * @param password The password of the User object.
      * @return The authenticated User object, or null if authentication failed.
      */
-    public User authenticate(String login, String password) {
-        logger.info("Try authenticate user with login: {}", login);
-        return userMap.values().stream().filter(user -> user.getLogin().equals(login) && user.getPassword().equals(password)).findFirst().orElse(null);
+    public Optional<User> authenticate(String login, String password) {
+        String sql = "SELECT * FROM app.user WHERE login = ? AND password = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, login);
+            pstmt.setString(2, password);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     /**
@@ -121,8 +192,26 @@ public class UserService implements CRUDService<User> {
      * @param login The login of the User object to retrieve.
      * @return The User object with the specified login, or null if not found.
      */
-    public User findByLogin(String login) {
-        logger.info("Try find user by login: {}", login);
-        return userMap.values().stream().filter(user -> user.getLogin().equals(login)).findFirst().orElse(null);
+    public Optional<User> findByLogin(String login) {
+        String sql = "SELECT * FROM app.user WHERE login = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, login);
+            ResultSet rs = pstmt.executeQuery();
+
+            if (rs.next()) {
+                return Optional.of(mapRowToUser(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    private User mapRowToUser(ResultSet rs) throws SQLException {
+        User user = new User(rs.getString("login"), rs.getString("password"), UserRole.valueOf(rs.getString("role")));
+        user.setId(rs.getLong("id"));
+        return user;
     }
 }

@@ -6,12 +6,14 @@ import ru.ylib.services.CarService;
 import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
 
+import java.sql.Connection;
 import java.util.Scanner;
 
 import static ru.ylib.Main.logger;
 
 public class Menu {
 
+    private final Connection connection;
     private final UserService userService;
     private final CarService carService;
     private final OrderService orderService;
@@ -22,7 +24,8 @@ public class Menu {
     protected static final String ENTER_PASSWORD = "Enter your password";
     protected static final String INVALID_CHOICE = "Invalid choice. Please try again.";
 
-    public Menu(UserService userService, CarService carService, OrderService orderService) {
+    public Menu(Connection connection, UserService userService, CarService carService, OrderService orderService) {
+        this.connection = connection;
         this.userService = userService;
         this.carService = carService;
         this.orderService = orderService;
@@ -109,7 +112,7 @@ public class Menu {
             System.out.println(ENTER_PASSWORD);
             String password = scanner.nextLine();
             // по умолчанию регистрируем обычного пользователя
-            boolean registered = userService.register(login, password, UserRole.USER);
+            boolean registered = false; //userService.register(login, password, UserRole.USER);
             if (registered) {
                 System.out.println("User registered successfully.");
                 return;
@@ -125,7 +128,7 @@ public class Menu {
             String login = scanner.nextLine();
             System.out.println(ENTER_PASSWORD);
             String password = scanner.nextLine();
-            User user = userService.authenticate(login, password);
+            User user = null; //userService.authenticate(login, password);
             if (user != null) {
                 return user;
             }
