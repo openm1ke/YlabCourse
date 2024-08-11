@@ -25,6 +25,12 @@ public class OrderService implements CRUDService<Order> {
         this.connection = connection;
     }
 
+    /**
+     * Creates a new order in the DataStore.
+     *
+     * @param order The order to create.
+     * @return The created order.
+     */
     @Override
     public Order create(Order order) {
         String sql = "INSERT INTO app.order (status, car_id, user_id, type, order_date) VALUES (?, ?, ?, ?, ?) RETURNING id";
@@ -130,6 +136,14 @@ public class OrderService implements CRUDService<Order> {
         return orders;
     }
 
+
+    /**
+     * Maps a ResultSet to an Order object.
+     *
+     * @param rs The ResultSet to map.
+     * @return The mapped Order object.
+     * @throws SQLException if an error occurs while reading the ResultSet.
+     */
     private Order mapToOrder(ResultSet rs) throws SQLException {
         Order order = new Order();
         order.setId(rs.getLong("id"));

@@ -1,5 +1,24 @@
 package ru.ylib;
 
+import liquibase.Contexts;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.containers.PostgreSQLContainer;
+import ru.ylib.models.Car;
+import ru.ylib.models.CarStatus;
+import ru.ylib.models.User;
+import ru.ylib.models.UserRole;
+import ru.ylib.services.CarService;
+import ru.ylib.services.UserService;
+import ru.ylib.utils.DatabaseConnection;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -7,24 +26,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import liquibase.Contexts;
-import liquibase.Liquibase;
-import liquibase.database.jvm.JdbcConnection;
-import liquibase.resource.ClassLoaderResourceAccessor;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.PostgreSQLContainer;
-import ru.ylib.models.User;
-import ru.ylib.models.UserRole;
-import ru.ylib.services.UserService;
-import ru.ylib.utils.DatabaseConnection;
-
-public class UserServiceTest {
+public class CarServiceTest {
     private Connection connection;
     private PostgreSQLContainer<?> container;
     private UserService userService;
+    private CarService carService;
 
     @BeforeEach
     void setUp() {
@@ -55,6 +61,7 @@ public class UserServiceTest {
         }
 
         userService = new UserService(connection);
+        carService = new CarService(connection);
     }
 
     @AfterEach
@@ -73,14 +80,8 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testCreateUser() {
-        User user = new User("testuser", "testpass", UserRole.USER);
-        User createdUser = userService.create(user);
-
-        Assertions.assertNotNull(createdUser);
-        Assertions.assertEquals("testuser", createdUser.getLogin());
-        Assertions.assertEquals("testpass", createdUser.getPassword());
-        Assertions.assertEquals(UserRole.USER, createdUser.getRole());
+    void CarServiceUnitTest() {
+        Assertions.assertEquals(3, carService.readAll().size());
 
     }
 

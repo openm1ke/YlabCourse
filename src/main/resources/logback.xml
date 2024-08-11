@@ -20,4 +20,11 @@
         <appender-ref ref="STDOUT"/>
         <appender-ref ref="FILE"/>
     </root>
+
+    <logger name="org.testcontainers" level="OFF"/>
+    <logger name="org.testcontainers.utility" level="OFF"/>
+    <logger name="com.github.dockerjava" level="OFF"/>
+    <root level="INFO">
+        <appender-ref ref="STDOUT"/>
+    </root>
 </configuration>

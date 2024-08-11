@@ -24,6 +24,13 @@ public class UserService implements CRUDService<User> {
         this.connection = connection;
     }
 
+
+    /**
+     * Creates a new User object in the DataStore.
+     *
+     * @param user The User object to create.
+     * @return The created User object.
+     */
     @Override
     public User create(User user) {
         String sql = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
@@ -67,6 +74,12 @@ public class UserService implements CRUDService<User> {
         return null;
     }
 
+    /**
+     * Updates an existing User object in the DataStore.
+     *
+     * @param user The updated User object.
+     * @return The updated User object, or null if not found.
+     */
     @Override
     public User update(User user) {
         String sql = "UPDATE app.user SET login = ?, password = ?, role = ? WHERE id = ?";
@@ -198,6 +211,12 @@ public class UserService implements CRUDService<User> {
         return Optional.empty();
     }
 
+    /**
+     * Maps a ResultSet to a User object.
+     *
+     * @param rs The ResultSet to map.
+     * @return The mapped User object.
+     */
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User(rs.getString("login"), rs.getString("password"), UserRole.valueOf(rs.getString("role")));
         user.setId(rs.getLong("id"));

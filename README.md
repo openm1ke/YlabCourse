@@ -18,7 +18,15 @@
 
 Компиляция приложения
 
-`mvn clean install`
+```bash
+mvn clean package
+```
+
+Запуск контейнера с базой данных postgres
+
+```bash
+docker-compose up -d
+```
 
 Запуск приложения
 
@@ -28,7 +36,10 @@ java -jar ./target/carservice-1.0.jar
 
 Запуск тестов
 
-`mvn test`
+` 
+mvn test
+`
+
 
 Создать файл документации
 

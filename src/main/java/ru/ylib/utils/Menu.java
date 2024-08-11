@@ -29,6 +29,12 @@ public class Menu {
     protected static final String REGISTER_SUCCESS = "User registered successfully.";
     protected static final String USER_ALREADY_EXISTS = "User with this login already exists. Please try again.";
 
+    /**
+     * Creates a new Menu object.
+     * @param userService
+     * @param carService
+     * @param orderService
+     */
     public Menu(UserService userService, CarService carService, OrderService orderService) {
         this.userService = userService;
         this.carService = carService;
@@ -36,6 +42,9 @@ public class Menu {
         this.scanner = new Scanner(System.in);
     }
 
+    /**
+     * Shows the main menu.
+     */
     public void showMenu() {
         logger.info("Showing Main menu");
         while(true) {
@@ -89,6 +98,9 @@ public class Menu {
         }
     }
 
+    /**
+     * Registers a new user.
+     */
     public void registerUser() {
         while(true) {
             System.out.println(ENTER_LOGIN);
@@ -106,6 +118,11 @@ public class Menu {
         }
     }
 
+
+    /**
+     * Authenticates a user.
+     * @return
+     */
     public User authenticateUser() {
         while(true) {
             System.out.println(ENTER_LOGIN);

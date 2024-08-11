@@ -138,6 +138,13 @@ public class CarService implements CRUDService<Car> {
         return cars;
     }
 
+    /**
+     * Maps a ResultSet to a Car object.
+     *
+     * @param rs The ResultSet to map.
+     * @return The mapped Car object.
+     * @throws SQLException If there is an error mapping the ResultSet.
+     */
     private Car mapToCar(ResultSet rs) throws SQLException {
         Car car = new Car();
         car.setId(rs.getLong("id"));

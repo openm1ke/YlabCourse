@@ -10,6 +10,10 @@ public class AdminMenu {
     private final OrderManager orderManager;
     private final UserManager userManager;
 
+    /**
+     * AdminMenu constructor.
+     * @param menu
+     */
     public AdminMenu(Menu menu) {
         this.scanner = menu.getScanner();
         this.carManager = new CarManager(menu);
@@ -17,6 +21,9 @@ public class AdminMenu {
         this.userManager = new UserManager(menu);
     }
 
+    /**
+     * Shows the admin menu.
+     */
     public void showMenu() {
         logger.info("Showing Admin menu");
         while(true) {
