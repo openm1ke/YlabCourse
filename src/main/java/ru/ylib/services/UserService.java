@@ -67,12 +67,6 @@ public class UserService implements CRUDService<User> {
         return null;
     }
 
-    /**
-     * Updates a User object in the DataStore.
-     *
-     * @param user The User object to update.
-     * @return The updated User object, or null if not found.
-     */
     @Override
     public User update(User user) {
         String sql = "UPDATE app.user SET login = ?, password = ?, role = ? WHERE id = ?";
@@ -122,12 +116,7 @@ public class UserService implements CRUDService<User> {
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                User user = new User();
-                user.setId(rs.getLong("id"));
-                user.setLogin(rs.getString("login"));
-                user.setPassword(rs.getString("password"));
-                user.setRole(UserRole.valueOf(rs.getString("role")));
-                users.add(user);
+                users.add(mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();

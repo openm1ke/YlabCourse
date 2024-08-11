@@ -19,6 +19,6 @@ unset PGPASSWORD
 
 echo "Schemas 'app' and 'liquibase' have been created."
 
-mvn luqibase:update
+mvn liquibase:update
 
 echo "liquibase has been updated."

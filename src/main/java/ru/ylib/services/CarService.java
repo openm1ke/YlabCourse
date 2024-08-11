@@ -1,10 +1,14 @@
 package ru.ylib.services;
 
 import ru.ylib.models.Car;
+import ru.ylib.models.CarStatus;
 
-import java.util.HashMap;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static ru.ylib.Main.logger;
 
@@ -13,18 +17,33 @@ import static ru.ylib.Main.logger;
  */
 public class CarService implements CRUDService<Car> {
 
-    private final Map<Long, Car> carMap = new HashMap<>();
-    /**
-     * Creates a new car and adds it to the DataStore.
-     *
-     * @param car The car to create.
-     * @return The created car.
-     */
+    private final Connection connection;
+
+    public CarService(Connection connection) {
+        this.connection = connection;
+    }
+    
     @Override
     public Car create(Car car) {
-        carMap.put(car.getId(), car);
-        logger.info("Car created: {}", car);
-        return car;
+        String sql = "INSERT INTO app.car (brand, model, year, price, status) VALUES (?, ?, ?, ?, ?) RETURNING id";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, car.getBrand());
+            stmt.setString(2, car.getModel());
+            stmt.setInt(3, car.getYear());
+            stmt.setDouble(4, car.getPrice());
+            stmt.setString(5, car.getStatus().name());
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                long id = rs.getLong("id");
+                car.setId(id); // Set the generated ID
+                logger.info("Car created: {}", car);
+                return car;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to create car", e);
+        }
+        return null;
     }
 
     /**
@@ -35,9 +54,25 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car read(long id) {
-        Car car = carMap.get(id);
-        logger.info("Car read: {}", id);
-        return car;
+        String sql = "SELECT * FROM app.car WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Car car = new Car();
+                car.setId(rs.getLong("id"));
+                car.setBrand(rs.getString("brand"));
+                car.setModel(rs.getString("model"));
+                car.setYear(rs.getInt("year"));
+                car.setPrice(rs.getDouble("price"));
+                car.setStatus(CarStatus.valueOf(rs.getString("status")));
+                logger.info("Car read: {}", car);
+                return car;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to read car", e);
+        }
+        return null;
     }
 
     /**
@@ -48,10 +83,19 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car update(Car car) {
-        if(carMap.containsKey(car.getId())) {
-            carMap.put(car.getId(), car);
+        String sql = "UPDATE app.car SET brand = ?, model = ?, year = ?, price = ?, status = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, car.getBrand());
+            stmt.setString(2, car.getModel());
+            stmt.setInt(3, car.getYear());
+            stmt.setDouble(4, car.getPrice());
+            stmt.setString(5, car.getStatus().name());
+            stmt.setLong(6, car.getId());
+            stmt.executeUpdate();
             logger.info("Car updated: {}", car);
             return car;
+        } catch (SQLException e) {
+            logger.error("Failed to update car", e);
         }
         return null;
     }
@@ -63,9 +107,13 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public void delete(long id) {
-        Car car = carMap.remove(id);
-        if(car == null) {
-            logger.info("Car not found: {}", id);
+        String sql = "DELETE FROM app.car WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+            logger.info("Car deleted: {}", id);
+        } catch (SQLException e) {
+            logger.error("Failed to delete car", e);
         }
     }
 
@@ -76,7 +124,28 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public List<Car> readAll() {
-        logger.info("View all cars");
-        return List.copyOf(carMap.values());
+        String sql = "SELECT * FROM app.car";
+        List<Car> cars = new ArrayList<>();
+        try (PreparedStatement stmt = connection.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                cars.add(mapToCar(rs));
+            }
+            logger.info("View all cars");
+        } catch (SQLException e) {
+            logger.error("Failed to read all cars", e);
+        }
+        return cars;
+    }
+
+    private Car mapToCar(ResultSet rs) throws SQLException {
+        Car car = new Car();
+        car.setId(rs.getLong("id"));
+        car.setBrand(rs.getString("brand"));
+        car.setModel(rs.getString("model"));
+        car.setYear(rs.getInt("year"));
+        car.setPrice(rs.getDouble("price"));
+        car.setStatus(CarStatus.valueOf(rs.getString("status")));
+        return car;
     }
 }

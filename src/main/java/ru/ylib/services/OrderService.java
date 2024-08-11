@@ -1,11 +1,15 @@
 package ru.ylib.services;
 
 import ru.ylib.models.Order;
+import ru.ylib.models.OrderStatus;
 import ru.ylib.models.OrderType;
 
-import java.util.HashMap;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static ru.ylib.Main.logger;
 
@@ -15,31 +19,48 @@ import static ru.ylib.Main.logger;
  */
 public class OrderService implements CRUDService<Order> {
 
-    private final Map<Long, Order> orderMap = new HashMap<>();
-    /**
-     * Creates a new order and adds it to the DataStore.
-     *
-     * @param order The order to create.
-     * @return The created order.
-     */
-    @Override
-    public Order create(Order order) {
-        orderMap.put(order.getId(), order);
-        logger.info("Order created: {}", order);
-        return order;
+    private final Connection connection;
+
+    public OrderService(Connection connection) {
+        this.connection = connection;
     }
 
-    /**
-     * Reads an order from the DataStore by its ID.
-     *
-     * @param id The ID of the order to read.
-     * @return The order with the given ID, or null if not found.
-     */
+    @Override
+    public Order create(Order order) {
+        String sql = "INSERT INTO app.order (status, car_id, user_id, type, order_date) VALUES (?, ?, ?, ?, ?) RETURNING id";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, order.getStatus().name());
+            stmt.setLong(2, order.getCarId());
+            stmt.setLong(3, order.getUserId());
+            stmt.setString(4, order.getType().name());
+            stmt.setDate(5, java.sql.Date.valueOf(order.getOrderDate()));
+
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                long id = rs.getLong("id");
+                order.setId(id); // Set the generated ID
+                logger.info("Order created: {}", order);
+                return order;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to create order", e);
+        }
+        return null;
+    }
+
     @Override
     public Order read(long id) {
-        Order order = orderMap.get(id);
-        logger.info("Order {} read: {}", id, order);
-        return order;
+        String sql = "SELECT * FROM app.order WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapToOrder(rs);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to read order", e);
+        }
+        return null;
     }
 
     /**
@@ -50,10 +71,22 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order update(Order order) {
-        if(orderMap.containsKey(order.getId())) {
-            orderMap.put(order.getId(), order);
-            logger.info("Order updated: {}", order);
-            return order;
+        String sql = "UPDATE app.order SET status = ?, car_id = ?, user_id = ?, type = ?, order_date = ? WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setString(1, order.getStatus().name());
+            stmt.setLong(2, order.getCarId());
+            stmt.setLong(3, order.getUserId());
+            stmt.setString(4, order.getType().name());
+            stmt.setDate(5, java.sql.Date.valueOf(order.getOrderDate()));
+            stmt.setLong(6, order.getId());
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                logger.info("Order updated: {}", order);
+                return order;
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to update order", e);
         }
         return null;
     }
@@ -65,9 +98,15 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public void delete(long id) {
-        Order order = orderMap.remove(id);
-        if(order == null) {
-            logger.info("Order not found: {}", id);
+        String sql = "DELETE FROM app.order WHERE id = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected == 0) {
+                logger.info("Order not found: {}", id);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to delete order", e);
         }
     }
 
@@ -78,8 +117,28 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public List<Order> readAll() {
-        logger.info("View all orders");
-        return List.copyOf(orderMap.values());
+        List<Order> orders = new ArrayList<>();
+        String sql = "SELECT * FROM app.order";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                orders.add(mapToOrder(rs));
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to read orders", e);
+        }
+        return orders;
+    }
+
+    private Order mapToOrder(ResultSet rs) throws SQLException {
+        Order order = new Order();
+        order.setId(rs.getLong("id"));
+        order.setStatus(OrderStatus.valueOf(rs.getString("status")));
+        order.setCarId(rs.getLong("car_id"));
+        order.setUserId(rs.getLong("user_id"));
+        order.setType(OrderType.valueOf(rs.getString("type")));
+        order.setOrderDate(rs.getDate("order_date").toLocalDate());
+        return order;
     }
 
     /**
@@ -89,12 +148,17 @@ public class OrderService implements CRUDService<Order> {
      * @return The order with the given car ID and type "BUY", or null if not found.
      */
     public Order readByCarId(long carId) {
-        logger.info("View orders by car ID: {}", carId);
-        return orderMap
-                .values()
-                .stream()
-                .filter(order -> order.getCarId() == carId && order.getType() == OrderType.BUY)
-                .findFirst()
-                .orElse(null);
+        logger.info("Reading order by car ID: {}", carId);
+        String sql = "SELECT * FROM app.order WHERE car_id = ? AND type = 'BUY'";
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            stmt.setLong(1, carId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return mapToOrder(rs);
+            }
+        } catch (SQLException e) {
+            logger.error("Failed to read order", e);
+        }
+        return null;
     }
 }

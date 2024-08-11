@@ -13,6 +13,10 @@ public class DatabaseConnection {
         }
     }
 
+    public static Connection getConnection(String url, String user, String password) throws SQLException {
+        return DriverManager.getConnection(url, user, password);
+    }
+
     public static Connection getConnection() throws SQLException {
         String url = ConfigLoader.getProperty("db.url");
         String user = ConfigLoader.getProperty("db.username");

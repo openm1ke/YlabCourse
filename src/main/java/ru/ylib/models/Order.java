@@ -1,7 +1,6 @@
 package ru.ylib.models;
 
 import lombok.*;
-import ru.ylib.utils.IdGenerator;
 
 import java.time.LocalDate;
 
@@ -13,7 +12,7 @@ import java.time.LocalDate;
 @ToString
 @RequiredArgsConstructor
 public class Order {
-    private final long id;
+    private long id;
     private OrderStatus status;
     private long carId;
     private long userId;
@@ -36,6 +35,5 @@ public class Order {
         this.userId = userId;
         this.type = type;
         this.orderDate = orderDate;
-        this.id = IdGenerator.generateOrderId();
     }
 }

@@ -1,19 +1,20 @@
 package ru.ylib.utils;
 
+import lombok.Getter;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 import ru.ylib.services.CarService;
 import ru.ylib.services.OrderService;
 import ru.ylib.services.UserService;
 
-import java.sql.Connection;
+import java.util.Optional;
 import java.util.Scanner;
 
 import static ru.ylib.Main.logger;
 
+@Getter
 public class Menu {
 
-    private final Connection connection;
     private final UserService userService;
     private final CarService carService;
     private final OrderService orderService;
@@ -23,9 +24,12 @@ public class Menu {
     protected static final String ENTER_LOGIN = "Enter your login";
     protected static final String ENTER_PASSWORD = "Enter your password";
     protected static final String INVALID_CHOICE = "Invalid choice. Please try again.";
+    protected static final String INVALID_LOGIN_OR_PASSWORD = "Invalid login or password. Please try again.";
+    protected static final String GOODBYE = "Goodbye!";
+    protected static final String REGISTER_SUCCESS = "User registered successfully.";
+    protected static final String USER_ALREADY_EXISTS = "User with this login already exists. Please try again.";
 
-    public Menu(Connection connection, UserService userService, CarService carService, OrderService orderService) {
-        this.connection = connection;
+    public Menu(UserService userService, CarService carService, OrderService orderService) {
         this.userService = userService;
         this.carService = carService;
         this.orderService = orderService;
@@ -74,7 +78,7 @@ public class Menu {
                     this.registerUser();
                     break;
                 case 3:
-                    System.out.println("Goodbye!");
+                    System.out.println(GOODBYE);
                     scanner.close();
                     System.exit(0);
                     return;
@@ -85,26 +89,6 @@ public class Menu {
         }
     }
 
-    public AdminMenu showAdminMenu() {
-        return new AdminMenu(this);
-    }
-
-    public UserService getUserService() {
-        return userService;
-    }
-
-    public CarService getCarService() {
-        return carService;
-    }
-
-    public Scanner getScanner() {
-        return scanner;
-    }
-
-    public OrderService getOrderService() {
-        return orderService;
-    }
-
     public void registerUser() {
         while(true) {
             System.out.println(ENTER_LOGIN);
@@ -112,12 +96,12 @@ public class Menu {
             System.out.println(ENTER_PASSWORD);
             String password = scanner.nextLine();
             // по умолчанию регистрируем обычного пользователя
-            boolean registered = false; //userService.register(login, password, UserRole.USER);
-            if (registered) {
-                System.out.println("User registered successfully.");
+            Optional<User> registered = userService.register(login, password, UserRole.USER);
+            if (registered.isPresent()) {
+                System.out.println(REGISTER_SUCCESS);
                 return;
             } else {
-                System.out.println("User with this login already exists. Please try again.");
+                System.out.println(USER_ALREADY_EXISTS);
             }
         }
     }
@@ -128,15 +112,12 @@ public class Menu {
             String login = scanner.nextLine();
             System.out.println(ENTER_PASSWORD);
             String password = scanner.nextLine();
-            User user = null; //userService.authenticate(login, password);
-            if (user != null) {
-                return user;
+            Optional<User> user = userService.authenticate(login, password);
+            if (user.isPresent()) {
+                return user.get();
             }
-            System.out.println("Invalid login or password. Please try again.");
+            System.out.println(INVALID_LOGIN_OR_PASSWORD);
         }
     }
 
-    public User getCurrentUser() {
-        return currentUser;
-    }
 }

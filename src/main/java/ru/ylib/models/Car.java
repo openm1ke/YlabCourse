@@ -1,7 +1,6 @@
 package ru.ylib.models;
 
 import lombok.*;
-import ru.ylib.utils.IdGenerator;
 
 /**
  * Represents a car with its brand, model, year, price, and status.
@@ -11,7 +10,7 @@ import ru.ylib.utils.IdGenerator;
 @ToString
 @RequiredArgsConstructor
 public class Car {
-    private final long id;
+    private long id;
     private String brand;
     private String model;
     private int year;
@@ -29,7 +28,6 @@ public class Car {
      */
     @Builder
     public Car(String brand, String model, int year, double price, CarStatus status) {
-        this.id = IdGenerator.generateCarId();
         this.brand = brand;
         this.model = model;
         this.year = year;

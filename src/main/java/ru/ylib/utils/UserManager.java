@@ -5,6 +5,7 @@ import ru.ylib.models.UserRole;
 import ru.ylib.services.UserService;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class UserManager {
@@ -55,9 +56,9 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = null; //userService.findByLogin(login);
-            if (user != null) {
-                userService.delete(user.getId());
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
+                userService.delete(user.get().getId());
                 System.out.printf("User deleted successfully.");
                 return;
             }
@@ -68,14 +69,14 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = null; //userService.findByLogin(login);
-            if (user != null) {
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
                 System.out.println("Enter new password:");
                 String password = scanner.nextLine();
-                user.setPassword(password);
+                user.get().setPassword(password);
                 UserRole role = selectUserRole();
-                user.setRole(role);
-                userService.update(user);
+                user.get().setRole(role);
+                userService.update(user.get());
                 System.out.println("User updated successfully.");
                 return;
             }
@@ -87,8 +88,9 @@ public class UserManager {
         while(true) {
             System.out.println("Enter user login:");
             String login = scanner.nextLine();
-            User user = null; //userService.findByLogin(login);
-            if (user != null) {
+            Optional<User> user = userService.findByLogin(login);
+            if (user.isPresent()) {
+                System.out.println("User found:");
                 System.out.println(user);
                 return;
             }
