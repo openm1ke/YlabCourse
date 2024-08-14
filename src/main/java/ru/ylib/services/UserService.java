@@ -146,16 +146,27 @@ public class UserService implements CRUDService<User> {
      * @return True if the registration was successful, false if the login is already taken.
      */
     public Optional<User> register(String login, String password, UserRole role) {
-        String sql = "SELECT * FROM app.user WHERE login = ? AND password = ?";
+        if (findByLogin(login).isPresent()) {
+            return Optional.empty();
+        }
+        String sql = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             pstmt.setString(1, login);
             pstmt.setString(2, password);
+            pstmt.setString(3, role.name());
             ResultSet rs = pstmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToUser(rs));
+                long id = rs.getLong("id");
+                User user = new User();
+                user.setId(id);
+                user.setLogin(login);
+                user.setPassword(password);
+                user.setRole(role);
+                logger.info("User created: {}", user);
+                return Optional.of(user);
             }
         } catch (SQLException e) {
             e.printStackTrace();
