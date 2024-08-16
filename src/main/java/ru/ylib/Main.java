@@ -28,13 +28,13 @@ public class Main {
 
         logger.info("Starting application");
 
-        Connection connection = null;
         UserService userService = null;
         CarService carService = null;
         OrderService orderService = null;
+        // Инициализация DatabaseConnection
+        DatabaseConnection dbConnection = new DatabaseConnection();
 
-        try {
-            connection = DatabaseConnection.getConnection();
+        try (Connection connection = dbConnection.getConnection()) {
 
             executeSqlFile("init-db.sql", connection);
 
@@ -46,15 +46,13 @@ public class Main {
 
             liquibase.update(new Contexts());
 
-            userService = new UserService(connection);
-            carService = new CarService(connection);
-            orderService = new OrderService(connection);
+            userService = new UserService(dbConnection);
+            carService = new CarService(dbConnection);
+            orderService = new OrderService(dbConnection);
         } catch (SQLException e) {
             logger.error("Failed to connect to the database", e);
             return;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (LiquibaseException e) {
+        } catch (IOException | LiquibaseException e) {
             throw new RuntimeException(e);
         }
 
@@ -63,13 +61,7 @@ public class Main {
         menu.showMenu();
 
         // Закрытие подключения к базе данных
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (SQLException e) {
-            logger.error("Failed to close the database connection", e);
-        }
+        dbConnection.closeConnection();
 
         logger.info("Application finished");
     }

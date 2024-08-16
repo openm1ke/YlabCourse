@@ -18,13 +18,18 @@ import static ru.ylib.Main.logger;
  */
 public class UserService implements CRUDService<User> {
 
-    private final Connection connection;
+    private final DatabaseConnection databaseConnection;
 
-    public UserService(Connection connection) {
-        this.connection = connection;
+    public UserService(DatabaseConnection databaseConnection) {
+        this.databaseConnection = databaseConnection;
     }
-
-
+    private static final String INSERT_USER = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
+    private static final String UPDATE_USER = "UPDATE app.user SET login = ?, password = ?, role = ? WHERE id = ?";
+    private static final String DELETE_USER = "DELETE FROM app.user WHERE id = ?";
+    private static final String SELECT_ALL_USERS = "SELECT * FROM app.user";
+    private static final String SELECT_USER_BY_ID = "SELECT * FROM app.user WHERE id = ?";
+    private static final String SELECT_USER_BY_LOGIN_PASSWORD = "SELECT * FROM app.user WHERE login = ? AND password = ?";
+    private static final String SELECT_USER_BY_LOGIN = "SELECT * FROM app.user WHERE login = ?";
     /**
      * Creates a new User object in the DataStore.
      *
@@ -33,8 +38,8 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User create(User user) {
-        String sql = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_USER)) {
             stmt.setString(1, user.getLogin());
             stmt.setString(2, user.getPassword());
             stmt.setString(3, user.getRole().name());
@@ -58,12 +63,11 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User read(long id) {
-        String sql = "SELECT * FROM app.user WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_ID)) {
 
-            pstmt.setLong(1, id);
-            ResultSet rs = pstmt.executeQuery();
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 return mapRowToUser(rs);
@@ -82,16 +86,15 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public User update(User user) {
-        String sql = "UPDATE app.user SET login = ?, password = ?, role = ? WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(UPDATE_USER)) {
 
-            pstmt.setString(1, user.getLogin());
-            pstmt.setString(2, user.getPassword());
-            pstmt.setString(3, user.getRole().name());
-            pstmt.setLong(4, user.getId());
+            stmt.setString(1, user.getLogin());
+            stmt.setString(2, user.getPassword());
+            stmt.setString(3, user.getRole().name());
+            stmt.setLong(4, user.getId());
 
-            pstmt.executeUpdate();
+            stmt.executeUpdate();
             return user;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -106,12 +109,11 @@ public class UserService implements CRUDService<User> {
      */
     @Override
     public void delete(long id) {
-        String sql = "DELETE FROM app.user WHERE id = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(DELETE_USER)) {
 
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -125,9 +127,9 @@ public class UserService implements CRUDService<User> {
     @Override
     public List<User> readAll() {
         List<User> users = new ArrayList<>();
-        String sql = "SELECT * FROM app.user";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_USERS)) {
+             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 users.add(mapRowToUser(rs));
             }
@@ -149,14 +151,13 @@ public class UserService implements CRUDService<User> {
         if (findByLogin(login).isPresent()) {
             return Optional.empty();
         }
-        String sql = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(INSERT_USER)) {
 
-            pstmt.setString(1, login);
-            pstmt.setString(2, password);
-            pstmt.setString(3, role.name());
-            ResultSet rs = pstmt.executeQuery();
+            stmt.setString(1, login);
+            stmt.setString(2, password);
+            stmt.setString(3, role.name());
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 long id = rs.getLong("id");
@@ -182,13 +183,12 @@ public class UserService implements CRUDService<User> {
      * @return The authenticated User object, or null if authentication failed.
      */
     public Optional<User> authenticate(String login, String password) {
-        String sql = "SELECT * FROM app.user WHERE login = ? AND password = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_LOGIN_PASSWORD)) {
 
-            pstmt.setString(1, login);
-            pstmt.setString(2, password);
-            ResultSet rs = pstmt.executeQuery();
+            stmt.setString(1, login);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 return Optional.of(mapRowToUser(rs));
@@ -206,12 +206,11 @@ public class UserService implements CRUDService<User> {
      * @return The User object with the specified login, or null if not found.
      */
     public Optional<User> findByLogin(String login) {
-        String sql = "SELECT * FROM app.user WHERE login = ?";
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        try (Connection conn = databaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_LOGIN)) {
 
-            pstmt.setString(1, login);
-            ResultSet rs = pstmt.executeQuery();
+            stmt.setString(1, login);
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 return Optional.of(mapRowToUser(rs));

@@ -1,5 +1,9 @@
 package ru.ylib.utils;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,35 +12,45 @@ import java.sql.SQLException;
  * Database connection utility class.
  */
 public class DatabaseConnection {
-    static {
-        try {
-            Class.forName(ConfigLoader.getProperty("db.driver"));
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException("Database driver not found", e);
+
+    private final HikariDataSource dataSource;
+
+    public DatabaseConnection() {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(ConfigLoader.getProperty("db.url"));
+        config.setUsername(ConfigLoader.getProperty("db.username"));
+        config.setPassword(ConfigLoader.getProperty("db.password"));
+
+        config.setMaximumPoolSize(10); // Количество соединений в пуле
+        config.setConnectionTimeout(30000); // Таймаут соединения
+        config.setIdleTimeout(600000); // Время простоя соединения
+
+        dataSource = new HikariDataSource(config);
+    }
+
+    public DatabaseConnection(String url, String user, String password) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(url);
+        config.setUsername(user);
+        config.setPassword(password);
+
+        config.setMaximumPoolSize(10); // Количество соединений в пуле
+        config.setConnectionTimeout(30000); // Таймаут соединения
+        config.setIdleTimeout(600000); // Время простоя соединения
+
+        dataSource = new HikariDataSource(config);
+    }
+
+    public Connection getConnection() throws SQLException {
+        if (dataSource == null || dataSource.isClosed()) {
+            throw new SQLException("Database connection is not initialized");
         }
+        return dataSource.getConnection();
     }
 
-    /**
-     * Gets a connection to the database.
-     * @param url
-     * @param user
-     * @param password
-     * @return
-     * @throws SQLException
-     */
-    public static Connection getConnection(String url, String user, String password) throws SQLException {
-        return DriverManager.getConnection(url, user, password);
-    }
-
-    /**
-     * Gets a connection to the database.
-     * @return
-     * @throws SQLException
-     */
-    public static Connection getConnection() throws SQLException {
-        String url = ConfigLoader.getProperty("db.url");
-        String user = ConfigLoader.getProperty("db.username");
-        String password = ConfigLoader.getProperty("db.password");
-        return DriverManager.getConnection(url, user, password);
+    public void closeConnection() {
+        if (dataSource != null && !dataSource.isClosed()) {
+            dataSource.close();
+        }
     }
 }

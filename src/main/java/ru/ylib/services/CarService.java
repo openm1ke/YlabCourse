@@ -2,8 +2,8 @@ package ru.ylib.services;
 
 import ru.ylib.models.Car;
 import ru.ylib.models.CarStatus;
+import ru.ylib.utils.DatabaseConnection;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,16 +17,22 @@ import static ru.ylib.Main.logger;
  */
 public class CarService implements CRUDService<Car> {
 
-    private final Connection connection;
+    private final DatabaseConnection dbConnection;
 
-    public CarService(Connection connection) {
-        this.connection = connection;
+    private static final String INSERT_CAR = "INSERT INTO app.car (brand, model, year, price, status) VALUES (?, ?, ?, ?, ?) RETURNING id";
+    private static final String UPDATE_CAR = "UPDATE app.car SET brand = ?, model = ?, year = ?, price = ?, status = ? WHERE id = ?";
+    private static final String DELETE_CAR = "DELETE FROM app.car WHERE id = ?";
+    private static final String SELECT_ALL_CARS = "SELECT * FROM app.car";
+    private static final String SELECT_CAR_BY_ID = "SELECT * FROM app.car WHERE id = ?";
+
+
+    public CarService(DatabaseConnection dbConnection) {
+        this.dbConnection = dbConnection;
     }
     
     @Override
     public Car create(Car car) {
-        String sql = "INSERT INTO app.car (brand, model, year, price, status) VALUES (?, ?, ?, ?, ?) RETURNING id";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(INSERT_CAR)) {
             stmt.setString(1, car.getBrand());
             stmt.setString(2, car.getModel());
             stmt.setInt(3, car.getYear());
@@ -54,8 +60,7 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car read(long id) {
-        String sql = "SELECT * FROM app.car WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_CAR_BY_ID)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -83,8 +88,7 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public Car update(Car car) {
-        String sql = "UPDATE app.car SET brand = ?, model = ?, year = ?, price = ?, status = ? WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(UPDATE_CAR)) {
             stmt.setString(1, car.getBrand());
             stmt.setString(2, car.getModel());
             stmt.setInt(3, car.getYear());
@@ -107,8 +111,7 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public void delete(long id) {
-        String sql = "DELETE FROM app.car WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(DELETE_CAR)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
             logger.info("Car deleted: {}", id);
@@ -124,9 +127,8 @@ public class CarService implements CRUDService<Car> {
      */
     @Override
     public List<Car> readAll() {
-        String sql = "SELECT * FROM app.car";
         List<Car> cars = new ArrayList<>();
-        try (PreparedStatement stmt = connection.prepareStatement(sql);
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ALL_CARS);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
                 cars.add(mapToCar(rs));

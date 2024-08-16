@@ -22,7 +22,7 @@ import ru.ylib.services.UserService;
 import ru.ylib.utils.DatabaseConnection;
 
 public class UserServiceTest {
-    private Connection connection;
+    private DatabaseConnection dbConnection;
     private PostgreSQLContainer<?> container;
     private UserService userService;
 
@@ -38,8 +38,8 @@ public class UserServiceTest {
             String url = container.getJdbcUrl();
             String username = container.getUsername();
             String password = container.getPassword();
-            connection = DatabaseConnection.getConnection(url, username, password);
-
+            dbConnection = new DatabaseConnection(url, username, password);
+            Connection connection = dbConnection.getConnection();
             executeSqlFile("init-db.sql", connection);
 
             Liquibase liquibase = new Liquibase(
@@ -54,14 +54,14 @@ public class UserServiceTest {
             e.printStackTrace();
         }
 
-        userService = new UserService(connection);
+        userService = new UserService(dbConnection);
     }
 
     @AfterEach
     void tearDown() {
         try {
-            if (connection != null) {
-                connection.close();
+            if (!dbConnection.getConnection().isClosed()) {
+                dbConnection.closeConnection();
             }
         } catch (SQLException e) {
             e.printStackTrace();

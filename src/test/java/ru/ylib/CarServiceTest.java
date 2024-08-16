@@ -2,8 +2,6 @@ package ru.ylib;
 
 import liquibase.Contexts;
 import liquibase.Liquibase;
-import liquibase.database.Database;
-import liquibase.database.DatabaseFactory;
 import liquibase.database.jvm.JdbcConnection;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import org.junit.jupiter.api.AfterEach;
@@ -11,10 +9,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
-import ru.ylib.models.Car;
-import ru.ylib.models.CarStatus;
-import ru.ylib.models.User;
-import ru.ylib.models.UserRole;
 import ru.ylib.services.CarService;
 import ru.ylib.services.UserService;
 import ru.ylib.utils.DatabaseConnection;
@@ -27,7 +21,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 public class CarServiceTest {
-    private Connection connection;
+    private DatabaseConnection dbConnection;
     private PostgreSQLContainer<?> container;
     private UserService userService;
     private CarService carService;
@@ -44,7 +38,8 @@ public class CarServiceTest {
             String url = container.getJdbcUrl();
             String username = container.getUsername();
             String password = container.getPassword();
-            connection = DatabaseConnection.getConnection(url, username, password);
+            DatabaseConnection dbConnection = new DatabaseConnection(url, username, password);
+            Connection connection = dbConnection.getConnection();
 
             executeSqlFile("init-db.sql", connection);
 
@@ -60,15 +55,15 @@ public class CarServiceTest {
             e.printStackTrace();
         }
 
-        userService = new UserService(connection);
-        carService = new CarService(connection);
+        userService = new UserService(dbConnection);
+        carService = new CarService(dbConnection);
     }
 
     @AfterEach
     void tearDown() {
         try {
-            if (connection != null) {
-                connection.close();
+            if (!dbConnection.getConnection().isClosed()) {
+                dbConnection.closeConnection();
             }
         } catch (SQLException e) {
             e.printStackTrace();

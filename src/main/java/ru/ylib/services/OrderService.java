@@ -3,6 +3,7 @@ package ru.ylib.services;
 import ru.ylib.models.Order;
 import ru.ylib.models.OrderStatus;
 import ru.ylib.models.OrderType;
+import ru.ylib.utils.DatabaseConnection;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,10 +20,17 @@ import static ru.ylib.Main.logger;
  */
 public class OrderService implements CRUDService<Order> {
 
-    private final Connection connection;
+    private final DatabaseConnection dbConnection;
 
-    public OrderService(Connection connection) {
-        this.connection = connection;
+    private static final String INSERT_ORDER = "INSERT INTO app.order (status, car_id, user_id, type, order_date) VALUES (?, ?, ?, ?, ?) RETURNING id";
+    private static final String UPDATE_ORDER = "UPDATE app.order SET status = ?, car_id = ?, user_id = ?, type = ?, order_date = ? WHERE id = ?";
+    private static final String DELETE_ORDER = "DELETE FROM app.order WHERE id = ?";
+    private static final String SELECT_ALL_ORDERS = "SELECT * FROM app.order";
+    private static final String SELECT_ORDER_BY_ID = "SELECT * FROM app.order WHERE id = ?";
+    private static final String SELECT_ORDER_BY_CAR_ID_AND_TYPE = "SELECT * FROM app.order WHERE car_id = ? AND type = 'BUY'";
+
+    public OrderService(DatabaseConnection dbConnection) {
+        this.dbConnection = dbConnection;
     }
 
     /**
@@ -33,8 +41,7 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order create(Order order) {
-        String sql = "INSERT INTO app.order (status, car_id, user_id, type, order_date) VALUES (?, ?, ?, ?, ?) RETURNING id";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(INSERT_ORDER)) {
             stmt.setString(1, order.getStatus().name());
             stmt.setLong(2, order.getCarId());
             stmt.setLong(3, order.getUserId());
@@ -56,8 +63,7 @@ public class OrderService implements CRUDService<Order> {
 
     @Override
     public Order read(long id) {
-        String sql = "SELECT * FROM app.order WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ORDER_BY_ID)) {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -77,8 +83,7 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public Order update(Order order) {
-        String sql = "UPDATE app.order SET status = ?, car_id = ?, user_id = ?, type = ?, order_date = ? WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(UPDATE_ORDER)) {
             stmt.setString(1, order.getStatus().name());
             stmt.setLong(2, order.getCarId());
             stmt.setLong(3, order.getUserId());
@@ -104,8 +109,7 @@ public class OrderService implements CRUDService<Order> {
      */
     @Override
     public void delete(long id) {
-        String sql = "DELETE FROM app.order WHERE id = ?";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(DELETE_ORDER)) {
             stmt.setLong(1, id);
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
@@ -124,8 +128,7 @@ public class OrderService implements CRUDService<Order> {
     @Override
     public List<Order> readAll() {
         List<Order> orders = new ArrayList<>();
-        String sql = "SELECT * FROM app.order";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ALL_ORDERS)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 orders.add(mapToOrder(rs));
@@ -163,8 +166,7 @@ public class OrderService implements CRUDService<Order> {
      */
     public Order readByCarId(long carId) {
         logger.info("Reading order by car ID: {}", carId);
-        String sql = "SELECT * FROM app.order WHERE car_id = ? AND type = 'BUY'";
-        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+        try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ORDER_BY_CAR_ID_AND_TYPE)) {
             stmt.setLong(1, carId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
