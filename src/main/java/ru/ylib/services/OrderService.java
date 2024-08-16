@@ -4,6 +4,7 @@ import ru.ylib.models.Order;
 import ru.ylib.models.OrderStatus;
 import ru.ylib.models.OrderType;
 import ru.ylib.utils.DatabaseConnection;
+import ru.ylib.utils.mappers.OrderMapper;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -67,7 +68,7 @@ public class OrderService implements CRUDService<Order> {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return mapToOrder(rs);
+                return OrderMapper.mapToOrder(rs);
             }
         } catch (SQLException e) {
             logger.error("Failed to read order", e);
@@ -131,31 +132,12 @@ public class OrderService implements CRUDService<Order> {
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ALL_ORDERS)) {
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                orders.add(mapToOrder(rs));
+                orders.add(OrderMapper.mapToOrder(rs));
             }
         } catch (SQLException e) {
             logger.error("Failed to read orders", e);
         }
         return orders;
-    }
-
-
-    /**
-     * Maps a ResultSet to an Order object.
-     *
-     * @param rs The ResultSet to map.
-     * @return The mapped Order object.
-     * @throws SQLException if an error occurs while reading the ResultSet.
-     */
-    private Order mapToOrder(ResultSet rs) throws SQLException {
-        Order order = new Order();
-        order.setId(rs.getLong("id"));
-        order.setStatus(OrderStatus.valueOf(rs.getString("status")));
-        order.setCarId(rs.getLong("car_id"));
-        order.setUserId(rs.getLong("user_id"));
-        order.setType(OrderType.valueOf(rs.getString("type")));
-        order.setOrderDate(rs.getDate("order_date").toLocalDate());
-        return order;
     }
 
     /**
@@ -170,7 +152,7 @@ public class OrderService implements CRUDService<Order> {
             stmt.setLong(1, carId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return mapToOrder(rs);
+                return OrderMapper.mapToOrder(rs);
             }
         } catch (SQLException e) {
             logger.error("Failed to read order", e);

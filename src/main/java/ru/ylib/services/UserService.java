@@ -6,6 +6,7 @@ import ru.ylib.models.UserRole;
 import java.sql.*;
 
 import ru.ylib.utils.DatabaseConnection;
+import ru.ylib.utils.mappers.UserMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return mapRowToUser(rs);
+                return UserMapper.mapRowToUser(rs);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -131,7 +132,7 @@ public class UserService implements CRUDService<User> {
              PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_USERS)) {
              ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                users.add(mapRowToUser(rs));
+                users.add(UserMapper.mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -191,7 +192,7 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToUser(rs));
+                return Optional.of(UserMapper.mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -213,7 +214,7 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToUser(rs));
+                return Optional.of(UserMapper.mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -227,9 +228,5 @@ public class UserService implements CRUDService<User> {
      * @param rs The ResultSet to map.
      * @return The mapped User object.
      */
-    private User mapRowToUser(ResultSet rs) throws SQLException {
-        User user = new User(rs.getString("login"), rs.getString("password"), UserRole.valueOf(rs.getString("role")));
-        user.setId(rs.getLong("id"));
-        return user;
-    }
+
 }

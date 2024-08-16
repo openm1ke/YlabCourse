@@ -3,6 +3,7 @@ package ru.ylib.services;
 import ru.ylib.models.Car;
 import ru.ylib.models.CarStatus;
 import ru.ylib.utils.DatabaseConnection;
+import ru.ylib.utils.mappers.CarMapper;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -131,30 +132,12 @@ public class CarService implements CRUDService<Car> {
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ALL_CARS);
              ResultSet rs = stmt.executeQuery()) {
             while (rs.next()) {
-                cars.add(mapToCar(rs));
+                cars.add(CarMapper.mapToCar(rs));
             }
             logger.info("View all cars");
         } catch (SQLException e) {
             logger.error("Failed to read all cars", e);
         }
         return cars;
-    }
-
-    /**
-     * Maps a ResultSet to a Car object.
-     *
-     * @param rs The ResultSet to map.
-     * @return The mapped Car object.
-     * @throws SQLException If there is an error mapping the ResultSet.
-     */
-    private Car mapToCar(ResultSet rs) throws SQLException {
-        Car car = new Car();
-        car.setId(rs.getLong("id"));
-        car.setBrand(rs.getString("brand"));
-        car.setModel(rs.getString("model"));
-        car.setYear(rs.getInt("year"));
-        car.setPrice(rs.getDouble("price"));
-        car.setStatus(CarStatus.valueOf(rs.getString("status")));
-        return car;
     }
 }
