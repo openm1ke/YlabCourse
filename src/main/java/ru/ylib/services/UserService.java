@@ -1,25 +1,28 @@
 package ru.ylib.services;
 
+import lombok.extern.slf4j.Slf4j;
+import org.mapstruct.factory.Mappers;
+import ru.ylib.dto.UserDTO;
+import ru.ylib.utils.mappers.UserMapper;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
 
 import java.sql.*;
 
 import ru.ylib.utils.DatabaseConnection;
-import ru.ylib.utils.mappers.UserMapper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static ru.ylib.Main.logger;
-
 /**
  * This class implements the CRUDService interface for User objects.
  */
-public class UserService implements CRUDService<User> {
+@Slf4j
+public class UserService implements CRUDService<UserDTO, User> {
 
     private final DatabaseConnection databaseConnection;
+    private final UserMapper userMapper = UserMapper.INSTANCE;
 
     public UserService(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
@@ -31,6 +34,7 @@ public class UserService implements CRUDService<User> {
     private static final String SELECT_USER_BY_ID = "SELECT * FROM app.user WHERE id = ?";
     private static final String SELECT_USER_BY_LOGIN_PASSWORD = "SELECT * FROM app.user WHERE login = ? AND password = ?";
     private static final String SELECT_USER_BY_LOGIN = "SELECT * FROM app.user WHERE login = ?";
+
     /**
      * Creates a new User object in the DataStore.
      *
@@ -38,7 +42,7 @@ public class UserService implements CRUDService<User> {
      * @return The created User object.
      */
     @Override
-    public User create(User user) {
+    public UserDTO create(User user) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_USER)) {
             stmt.setString(1, user.getLogin());
@@ -47,13 +51,13 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 user.setId(rs.getLong("id"));
-                logger.info("User created: {}", user);
+                log.info("User created: {}", user);
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            logger.error("Error creating user", e);
+            log.error("Error creating user", e);
         }
-        return user;
+        return userMapper.userToUserDTO(user);
     }
 
     /**
@@ -63,7 +67,7 @@ public class UserService implements CRUDService<User> {
      * @return The User object with the specified ID, or null if not found.
      */
     @Override
-    public User read(long id) {
+    public UserDTO read(long id) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_ID)) {
 
@@ -71,7 +75,8 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return UserMapper.mapRowToUser(rs);
+                User user = mapRowToUser(rs);
+                return userMapper.userToUserDTO(user);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -86,7 +91,7 @@ public class UserService implements CRUDService<User> {
      * @return The updated User object, or null if not found.
      */
     @Override
-    public User update(User user) {
+    public UserDTO update(User user) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_USER)) {
 
@@ -96,7 +101,7 @@ public class UserService implements CRUDService<User> {
             stmt.setLong(4, user.getId());
 
             stmt.executeUpdate();
-            return user;
+            return userMapper.userToUserDTO(user);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -126,13 +131,14 @@ public class UserService implements CRUDService<User> {
      * @return A list of all User objects.
      */
     @Override
-    public List<User> readAll() {
-        List<User> users = new ArrayList<>();
+    public List<UserDTO> readAll() {
+        List<UserDTO> users = new ArrayList<>();
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_USERS)) {
              ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
-                users.add(UserMapper.mapRowToUser(rs));
+                User user = mapRowToUser(rs);
+                users.add(userMapper.userToUserDTO(user));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -148,7 +154,7 @@ public class UserService implements CRUDService<User> {
      * @param role The role of the User object.
      * @return True if the registration was successful, false if the login is already taken.
      */
-    public Optional<User> register(String login, String password, UserRole role) {
+    public Optional<UserDTO> register(String login, String password, UserRole role) {
         if (findByLogin(login).isPresent()) {
             return Optional.empty();
         }
@@ -167,8 +173,8 @@ public class UserService implements CRUDService<User> {
                 user.setLogin(login);
                 user.setPassword(password);
                 user.setRole(role);
-                logger.info("User created: {}", user);
-                return Optional.of(user);
+                log.info("User created: {}", user);
+                return Optional.of(userMapper.userToUserDTO(user));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -192,7 +198,7 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(UserMapper.mapRowToUser(rs));
+                return Optional.of(mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -207,6 +213,8 @@ public class UserService implements CRUDService<User> {
      * @return The User object with the specified login, or null if not found.
      */
     public Optional<User> findByLogin(String login) {
+        UserMapper userMapper1 = Mappers.getMapper(UserMapper.class);
+
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_LOGIN)) {
 
@@ -214,7 +222,7 @@ public class UserService implements CRUDService<User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(UserMapper.mapRowToUser(rs));
+                return Optional.of(mapRowToUser(rs));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -228,5 +236,11 @@ public class UserService implements CRUDService<User> {
      * @param rs The ResultSet to map.
      * @return The mapped User object.
      */
+
+    private User mapRowToUser(ResultSet rs) throws SQLException {
+        User user = new User(rs.getString("login"), rs.getString("password"), UserRole.valueOf(rs.getString("role")));
+        user.setId(rs.getLong("id"));
+        return user;
+    }
 
 }
