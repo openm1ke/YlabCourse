@@ -19,7 +19,7 @@ import static ru.ylib.Main.logger;
 /**
  * Implementation of the CRUDService interface for managing orders.
  */
-public class OrderService implements CRUDService<OrderDTO, Order> {
+public class OrderService implements CRUDService<OrderDTO> {
 
     private final DatabaseConnection dbConnection;
     private final OrderMapper orderMapper = OrderMapper.INSTANCE;
@@ -42,7 +42,8 @@ public class OrderService implements CRUDService<OrderDTO, Order> {
      * @return The created order.
      */
     @Override
-    public OrderDTO create(Order order) {
+    public OrderDTO create(OrderDTO orderDTO) {
+        Order order = orderMapper.orderDTOToOrder(orderDTO);
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(INSERT_ORDER)) {
             stmt.setString(1, order.getStatus().name());
             stmt.setLong(2, order.getCarId());
@@ -85,7 +86,8 @@ public class OrderService implements CRUDService<OrderDTO, Order> {
      * @return The updated order, or null if not found.
      */
     @Override
-    public OrderDTO update(Order order) {
+    public OrderDTO update(OrderDTO orderDTO) {
+        Order order = orderMapper.orderDTOToOrder(orderDTO);
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(UPDATE_ORDER)) {
             stmt.setString(1, order.getStatus().name());
             stmt.setLong(2, order.getCarId());

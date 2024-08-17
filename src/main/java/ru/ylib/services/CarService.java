@@ -17,7 +17,7 @@ import static ru.ylib.Main.logger;
 /**
  * This class implements the CRUDService interface for cars.
  */
-public class CarService implements CRUDService<CarDTO, Car> {
+public class CarService implements CRUDService<CarDTO> {
 
     private final DatabaseConnection dbConnection;
     private final CarMapper carMapper = CarMapper.INSTANCE;
@@ -34,7 +34,8 @@ public class CarService implements CRUDService<CarDTO, Car> {
     }
     
     @Override
-    public CarDTO create(Car car) {
+    public CarDTO create(CarDTO carDTO) {
+        Car car = carMapper.carDTOToCar(carDTO);
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(INSERT_CAR)) {
             stmt.setString(1, car.getBrand());
             stmt.setString(2, car.getModel());
@@ -67,13 +68,7 @@ public class CarService implements CRUDService<CarDTO, Car> {
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                Car car = new Car();
-                car.setId(rs.getLong("id"));
-                car.setBrand(rs.getString("brand"));
-                car.setModel(rs.getString("model"));
-                car.setYear(rs.getInt("year"));
-                car.setPrice(rs.getDouble("price"));
-                car.setStatus(CarStatus.valueOf(rs.getString("status")));
+                Car car = mapToCar(rs);
                 logger.info("Car read: {}", car);
                 return carMapper.carToCarDTO(car);
             }
@@ -90,7 +85,8 @@ public class CarService implements CRUDService<CarDTO, Car> {
      * @return The updated car, or null if not found.
      */
     @Override
-    public CarDTO update(Car car) {
+    public CarDTO update(CarDTO carDTO) {
+        Car car = carMapper.carDTOToCar(carDTO);
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(UPDATE_CAR)) {
             stmt.setString(1, car.getBrand());
             stmt.setString(2, car.getModel());

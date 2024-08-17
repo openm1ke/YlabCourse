@@ -19,7 +19,7 @@ import java.util.Optional;
  * This class implements the CRUDService interface for User objects.
  */
 @Slf4j
-public class UserService implements CRUDService<UserDTO, User> {
+public class UserService implements CRUDService<UserDTO> {
 
     private final DatabaseConnection databaseConnection;
     private final UserMapper userMapper = UserMapper.INSTANCE;
@@ -35,14 +35,9 @@ public class UserService implements CRUDService<UserDTO, User> {
     private static final String SELECT_USER_BY_LOGIN_PASSWORD = "SELECT * FROM app.user WHERE login = ? AND password = ?";
     private static final String SELECT_USER_BY_LOGIN = "SELECT * FROM app.user WHERE login = ?";
 
-    /**
-     * Creates a new User object in the DataStore.
-     *
-     * @param user The User object to create.
-     * @return The created User object.
-     */
     @Override
-    public UserDTO create(User user) {
+    public UserDTO create(UserDTO userDTO) {
+        User user = userMapper.userDTOToUser(userDTO);
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(INSERT_USER)) {
             stmt.setString(1, user.getLogin());
@@ -91,15 +86,14 @@ public class UserService implements CRUDService<UserDTO, User> {
      * @return The updated User object, or null if not found.
      */
     @Override
-    public UserDTO update(User user) {
+    public UserDTO update(UserDTO userDTO) {
+        User user = userMapper.userDTOToUser(userDTO);
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_USER)) {
-
             stmt.setString(1, user.getLogin());
             stmt.setString(2, user.getPassword());
             stmt.setString(3, user.getRole().name());
             stmt.setLong(4, user.getId());
-
             stmt.executeUpdate();
             return userMapper.userToUserDTO(user);
         } catch (SQLException e) {
@@ -117,7 +111,6 @@ public class UserService implements CRUDService<UserDTO, User> {
     public void delete(long id) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(DELETE_USER)) {
-
             stmt.setLong(1, id);
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -167,12 +160,7 @@ public class UserService implements CRUDService<UserDTO, User> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                long id = rs.getLong("id");
-                User user = new User();
-                user.setId(id);
-                user.setLogin(login);
-                user.setPassword(password);
-                user.setRole(role);
+                User user = mapRowToUser(rs);
                 log.info("User created: {}", user);
                 return Optional.of(userMapper.userToUserDTO(user));
             }
@@ -192,11 +180,9 @@ public class UserService implements CRUDService<UserDTO, User> {
     public Optional<User> authenticate(String login, String password) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_LOGIN_PASSWORD)) {
-
             stmt.setString(1, login);
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
-
             if (rs.next()) {
                 return Optional.of(mapRowToUser(rs));
             }

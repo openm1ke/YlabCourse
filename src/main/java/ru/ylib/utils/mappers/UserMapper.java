@@ -15,9 +15,6 @@ public interface UserMapper {
 
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    @Mapping(source = "role.name", target = "role")
     UserDTO userToUserDTO(User user);
-
-    @Mapping(source = "role", target = "role")
     User userDTOToUser(UserDTO userDTO);
 }
