@@ -3,14 +3,9 @@ package ru.ylib.utils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * Database connection utility class.
- */
 public class DatabaseConnection {
 
     private final HikariDataSource dataSource;
@@ -20,11 +15,10 @@ public class DatabaseConnection {
         config.setJdbcUrl(ConfigLoader.getProperty("db.url"));
         config.setUsername(ConfigLoader.getProperty("db.username"));
         config.setPassword(ConfigLoader.getProperty("db.password"));
-
-        config.setMaximumPoolSize(10); // Количество соединений в пуле
-        config.setConnectionTimeout(30000); // Таймаут соединения
-        config.setIdleTimeout(600000); // Время простоя соединения
-
+        config.setDriverClassName(ConfigLoader.getProperty("db.driver"));
+        config.setMaximumPoolSize(Integer.parseInt(ConfigLoader.getProperty("db.max.pool.size")));
+        config.setConnectionTimeout(Integer.parseInt(ConfigLoader.getProperty("db.conn.timeout")));
+        config.setIdleTimeout(Integer.parseInt(ConfigLoader.getProperty("db.idle.timeout")));
         dataSource = new HikariDataSource(config);
     }
 
@@ -33,11 +27,10 @@ public class DatabaseConnection {
         config.setJdbcUrl(url);
         config.setUsername(user);
         config.setPassword(password);
-
-        config.setMaximumPoolSize(10); // Количество соединений в пуле
-        config.setConnectionTimeout(30000); // Таймаут соединения
-        config.setIdleTimeout(600000); // Время простоя соединения
-
+        config.setDriverClassName(ConfigLoader.getProperty("db.driver"));
+        config.setMaximumPoolSize(Integer.parseInt(ConfigLoader.getProperty("db.max.pool.size")));
+        config.setConnectionTimeout(Integer.parseInt(ConfigLoader.getProperty("db.conn.timeout")));
+        config.setIdleTimeout(Integer.parseInt(ConfigLoader.getProperty("db.idle.timeout")));
         dataSource = new HikariDataSource(config);
     }
 

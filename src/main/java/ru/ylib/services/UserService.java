@@ -55,12 +55,6 @@ public class UserService implements CRUDService<UserDTO> {
         return userMapper.userToUserDTO(user);
     }
 
-    /**
-     * Retrieves a User object from the DataStore by its ID.
-     *
-     * @param id The ID of the User object to retrieve.
-     * @return The User object with the specified ID, or null if not found.
-     */
     @Override
     public UserDTO read(long id) {
         try (Connection conn = databaseConnection.getConnection();
@@ -79,12 +73,6 @@ public class UserService implements CRUDService<UserDTO> {
         return null;
     }
 
-    /**
-     * Updates an existing User object in the DataStore.
-     *
-     * @param user The updated User object.
-     * @return The updated User object, or null if not found.
-     */
     @Override
     public UserDTO update(UserDTO userDTO) {
         User user = userMapper.userDTOToUser(userDTO);
