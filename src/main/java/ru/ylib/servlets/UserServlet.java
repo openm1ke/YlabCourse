@@ -14,7 +14,7 @@ import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/users")
+@WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
 
     private UserService userService;

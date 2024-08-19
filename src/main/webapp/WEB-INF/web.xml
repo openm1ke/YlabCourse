@@ -4,15 +4,34 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
 
+    <context-param>
+        <param-name>contextClass</param-name>
+        <param-value>org.springframework.web.context.support.AnnotationConfigWebApplicationContext</param-value>
+    </context-param>
+
+    <!-- Загрузка Spring Context при старте приложения -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>ru.ylib.config.AppConfig</param-value> <!-- Здесь указывается ваш конфигурационный класс -->
+    </context-param>
+
+    <!-- Настройка DispatcherServlet -->
     <servlet>
-        <servlet-name>UserServlet</servlet-name>
-        <servlet-class>ru.ylib.servlets.UserServlet</servlet-class>
+        <servlet-name>dispatcher</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+        <init-param>
+            <param-name>contextConfigLocation</param-name>
+            <param-value></param-value> <!-- Пустое значение, чтобы использовать конфигурацию, загруженную ContextLoaderListener -->
+        </init-param>
+        <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>UserServlet</servlet-name>
-        <url-pattern>/users/*</url-pattern>
+        <servlet-name>dispatcher</servlet-name>
+        <url-pattern>/</url-pattern>
     </servlet-mapping>
-
 </web-app>

@@ -2,6 +2,8 @@ package ru.ylib.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.ylib.dto.UserDTO;
 import ru.ylib.utils.mappers.UserMapper;
 import ru.ylib.models.User;
@@ -19,12 +21,13 @@ import java.util.Optional;
  * This class implements the CRUDService interface for User objects.
  */
 @Slf4j
+@Service
 public class UserService implements CRUDService<UserDTO> {
 
     private final DatabaseConnection databaseConnection;
     private final UserMapper userMapper = UserMapper.INSTANCE;
 
-    public UserService(DatabaseConnection databaseConnection) {
+    public UserService(@Autowired DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
     private static final String INSERT_USER = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";
@@ -57,6 +60,7 @@ public class UserService implements CRUDService<UserDTO> {
 
     @Override
     public UserDTO read(long id) {
+        log.info("Reading user with id: {}", id);
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_ID)) {
 
@@ -75,6 +79,7 @@ public class UserService implements CRUDService<UserDTO> {
 
     @Override
     public UserDTO update(UserDTO userDTO) {
+        log.info("Updating user: {}", userDTO);
         User user = userMapper.userDTOToUser(userDTO);
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(UPDATE_USER)) {
@@ -97,6 +102,7 @@ public class UserService implements CRUDService<UserDTO> {
      */
     @Override
     public void delete(long id) {
+        log.info("Deleting user with id: {}", id);
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(DELETE_USER)) {
             stmt.setLong(1, id);
@@ -113,6 +119,7 @@ public class UserService implements CRUDService<UserDTO> {
      */
     @Override
     public List<UserDTO> readAll() {
+        log.info("Reading all users");
         List<UserDTO> users = new ArrayList<>();
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_ALL_USERS)) {
@@ -186,9 +193,7 @@ public class UserService implements CRUDService<UserDTO> {
      * @param login The login of the User object to retrieve.
      * @return The User object with the specified login, or null if not found.
      */
-    public Optional<User> findByLogin(String login) {
-        UserMapper userMapper1 = Mappers.getMapper(UserMapper.class);
-
+    public Optional<UserDTO> findByLogin(String login) {
         try (Connection conn = databaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(SELECT_USER_BY_LOGIN)) {
 
@@ -196,20 +201,14 @@ public class UserService implements CRUDService<UserDTO> {
             ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
-                return Optional.of(mapRowToUser(rs));
+                log.info("Found user by login: {}", login);
+                return Optional.of(userMapper.userToUserDTO(mapRowToUser(rs)));
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return Optional.empty();
     }
-
-    /**
-     * Maps a ResultSet to a User object.
-     *
-     * @param rs The ResultSet to map.
-     * @return The mapped User object.
-     */
 
     private User mapRowToUser(ResultSet rs) throws SQLException {
         User user = new User(rs.getString("login"), rs.getString("password"), UserRole.valueOf(rs.getString("role")));

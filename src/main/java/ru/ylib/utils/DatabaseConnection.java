@@ -2,6 +2,7 @@ package ru.ylib.utils;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -22,17 +23,17 @@ public class DatabaseConnection {
         dataSource = new HikariDataSource(config);
     }
 
-    public DatabaseConnection(String url, String user, String password) {
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(url);
-        config.setUsername(user);
-        config.setPassword(password);
-        config.setDriverClassName(ConfigLoader.getProperty("db.driver"));
-        config.setMaximumPoolSize(Integer.parseInt(ConfigLoader.getProperty("db.max.pool.size")));
-        config.setConnectionTimeout(Integer.parseInt(ConfigLoader.getProperty("db.conn.timeout")));
-        config.setIdleTimeout(Integer.parseInt(ConfigLoader.getProperty("db.idle.timeout")));
-        dataSource = new HikariDataSource(config);
-    }
+//    public DatabaseConnection(String url, String user, String password) {
+//        HikariConfig config = new HikariConfig();
+//        config.setJdbcUrl(url);
+//        config.setUsername(user);
+//        config.setPassword(password);
+//        config.setDriverClassName(ConfigLoader.getProperty("db.driver"));
+//        config.setMaximumPoolSize(Integer.parseInt(ConfigLoader.getProperty("db.max.pool.size")));
+//        config.setConnectionTimeout(Integer.parseInt(ConfigLoader.getProperty("db.conn.timeout")));
+//        config.setIdleTimeout(Integer.parseInt(ConfigLoader.getProperty("db.idle.timeout")));
+//        dataSource = new HikariDataSource(config);
+//    }
 
     public Connection getConnection() throws SQLException {
         if (dataSource == null || dataSource.isClosed()) {
