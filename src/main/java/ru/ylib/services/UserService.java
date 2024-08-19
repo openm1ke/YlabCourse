@@ -27,7 +27,8 @@ public class UserService implements CRUDService<UserDTO> {
     private final DatabaseConnection databaseConnection;
     private final UserMapper userMapper = UserMapper.INSTANCE;
 
-    public UserService(@Autowired DatabaseConnection databaseConnection) {
+    @Autowired
+    public UserService(DatabaseConnection databaseConnection) {
         this.databaseConnection = databaseConnection;
     }
     private static final String INSERT_USER = "INSERT INTO app.user (login, password, role) VALUES (?, ?, ?) RETURNING id";

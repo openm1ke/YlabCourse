@@ -13,7 +13,7 @@ import jakarta.servlet.ServletException;
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/cars")
+@WebServlet("/cars/*")
 public class CarServlet extends HttpServlet {
 
     private CarService carService;

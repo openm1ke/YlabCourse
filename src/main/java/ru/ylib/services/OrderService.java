@@ -1,5 +1,8 @@
 package ru.ylib.services;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.ylib.dto.OrderDTO;
 import ru.ylib.models.Order;
 import ru.ylib.models.OrderStatus;
@@ -13,8 +16,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.ylib.Main.logger;
-
+@Slf4j
+@Service
 public class OrderService implements CRUDService<OrderDTO> {
 
     private final DatabaseConnection dbConnection;
@@ -27,6 +30,7 @@ public class OrderService implements CRUDService<OrderDTO> {
     private static final String SELECT_ORDER_BY_ID = "SELECT * FROM app.order WHERE id = ?";
     private static final String SELECT_ORDER_BY_CAR_ID_AND_TYPE = "SELECT * FROM app.order WHERE car_id = ? AND type = 'BUY'";
 
+    @Autowired
     public OrderService(DatabaseConnection dbConnection) {
         this.dbConnection = dbConnection;
     }
@@ -45,11 +49,11 @@ public class OrderService implements CRUDService<OrderDTO> {
             if (rs.next()) {
                 long id = rs.getLong("id");
                 order.setId(id); // Set the generated ID
-                logger.info("Order created: {}", order);
+                log.info("Order created: {}", order);
                 return orderMapper.orderToOrderDTO(order);
             }
         } catch (SQLException e) {
-            logger.error("Failed to create order", e);
+            log.error("Failed to create order", e);
         }
         return null;
     }
@@ -64,7 +68,7 @@ public class OrderService implements CRUDService<OrderDTO> {
                 return orderMapper.orderToOrderDTO(order);
             }
         } catch (SQLException e) {
-            logger.error("Failed to read order", e);
+            log.error("Failed to read order", e);
         }
         return null;
     }
@@ -82,11 +86,11 @@ public class OrderService implements CRUDService<OrderDTO> {
 
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
-                logger.info("Order updated: {}", order);
+                log.info("Order updated: {}", order);
                 return orderMapper.orderToOrderDTO(order);
             }
         } catch (SQLException e) {
-            logger.error("Failed to update order", e);
+            log.error("Failed to update order", e);
         }
         return null;
     }
@@ -97,10 +101,10 @@ public class OrderService implements CRUDService<OrderDTO> {
             stmt.setLong(1, id);
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected == 0) {
-                logger.info("Order not found: {}", id);
+                log.info("Order not found: {}", id);
             }
         } catch (SQLException e) {
-            logger.error("Failed to delete order", e);
+            log.error("Failed to delete order", e);
         }
     }
 
@@ -114,13 +118,13 @@ public class OrderService implements CRUDService<OrderDTO> {
                 orders.add(orderMapper.orderToOrderDTO(order));
             }
         } catch (SQLException e) {
-            logger.error("Failed to read orders", e);
+            log.error("Failed to read orders", e);
         }
         return orders;
     }
 
     public OrderDTO readByCarId(long carId) {
-        logger.info("Reading order by car ID: {}", carId);
+        log.info("Reading order by car ID: {}", carId);
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(SELECT_ORDER_BY_CAR_ID_AND_TYPE)) {
             stmt.setLong(1, carId);
             ResultSet rs = stmt.executeQuery();
@@ -129,7 +133,7 @@ public class OrderService implements CRUDService<OrderDTO> {
                 return orderMapper.orderToOrderDTO(order);
             }
         } catch (SQLException e) {
-            logger.error("Failed to read order", e);
+            log.error("Failed to read order", e);
         }
         return null;
     }

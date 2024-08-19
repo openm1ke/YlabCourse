@@ -1,5 +1,8 @@
 package ru.ylib.services;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 import ru.ylib.dto.CarDTO;
 import ru.ylib.models.Car;
 import ru.ylib.models.CarStatus;
@@ -12,11 +15,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.ylib.Main.logger;
-
 /**
  * This class implements the CRUDService interface for cars.
  */
+
+@Slf4j
+@Service
 public class CarService implements CRUDService<CarDTO> {
 
     private final DatabaseConnection dbConnection;
@@ -29,6 +33,7 @@ public class CarService implements CRUDService<CarDTO> {
     private static final String SELECT_CAR_BY_ID = "SELECT * FROM app.car WHERE id = ?";
 
 
+    @Autowired
     public CarService(DatabaseConnection dbConnection) {
         this.dbConnection = dbConnection;
     }
@@ -47,11 +52,11 @@ public class CarService implements CRUDService<CarDTO> {
             if (rs.next()) {
                 long id = rs.getLong("id");
                 car.setId(id); // Set the generated ID
-                logger.info("Car created: {}", car);
+                log.info("Car created: {}", car);
                 return carMapper.carToCarDTO(car);
             }
         } catch (SQLException e) {
-            logger.error("Failed to create car", e);
+            log.error("Failed to create car", e);
         }
         return null;
     }
@@ -69,11 +74,11 @@ public class CarService implements CRUDService<CarDTO> {
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 Car car = mapToCar(rs);
-                logger.info("Car read: {}", car);
+                log.info("Car read: {}", car);
                 return carMapper.carToCarDTO(car);
             }
         } catch (SQLException e) {
-            logger.error("Failed to read car", e);
+            log.error("Failed to read car", e);
         }
         return null;
     }
@@ -95,10 +100,10 @@ public class CarService implements CRUDService<CarDTO> {
             stmt.setString(5, car.getStatus().name());
             stmt.setLong(6, car.getId());
             stmt.executeUpdate();
-            logger.info("Car updated: {}", car);
+            log.info("Car updated: {}", car);
             return carMapper.carToCarDTO(car);
         } catch (SQLException e) {
-            logger.error("Failed to update car", e);
+            log.error("Failed to update car", e);
         }
         return null;
     }
@@ -113,9 +118,9 @@ public class CarService implements CRUDService<CarDTO> {
         try (PreparedStatement stmt = dbConnection.getConnection().prepareStatement(DELETE_CAR)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
-            logger.info("Car deleted: {}", id);
+            log.info("Car deleted: {}", id);
         } catch (SQLException e) {
-            logger.error("Failed to delete car", e);
+            log.error("Failed to delete car", e);
         }
     }
 
@@ -133,9 +138,9 @@ public class CarService implements CRUDService<CarDTO> {
                 Car car = mapToCar(rs);
                 cars.add(carMapper.carToCarDTO(car));
             }
-            logger.info("View all cars");
+            log.info("View all cars");
         } catch (SQLException e) {
-            logger.error("Failed to read all cars", e);
+            log.error("Failed to read all cars", e);
         }
         return cars;
     }
