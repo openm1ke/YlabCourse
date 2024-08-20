@@ -2,11 +2,13 @@ package ru.ylib.utils;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
+@Component
 public class DatabaseConnection {
 
     private final HikariDataSource dataSource;

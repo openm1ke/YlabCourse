@@ -1,29 +1,31 @@
 package ru.ylib.servlets;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import ru.ylib.dto.UserDTO;
 import ru.ylib.services.UserService;
-import ru.ylib.utils.DatabaseConnection;
 
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet("/users/*")
 public class UserServlet extends HttpServlet {
 
+    @Autowired
     private UserService userService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void init() throws ServletException {
-        DatabaseConnection dbConnection = new DatabaseConnection();
-        this.userService = new UserService(dbConnection);
+        SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
+//        ApplicationContext context = new AnnotationConfigApplicationContext(AopConfig.class);
+//        userService = context.getBean(UserService.class);
     }
 
     @Override
@@ -87,4 +89,5 @@ public class UserServlet extends HttpServlet {
         userService.delete(id);
         resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
     }
+
 }

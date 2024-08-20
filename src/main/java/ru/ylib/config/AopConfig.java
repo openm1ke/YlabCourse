@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import ru.ylib.aspects.AuditAspect;
 import ru.ylib.services.UserService;
+import ru.ylib.services.UserServiceImpl;
 import ru.ylib.servlets.UserServlet;
 import ru.ylib.utils.DatabaseConnection;
 
@@ -21,7 +22,7 @@ public class AopConfig {
 
     @Bean
     public UserService userService(DatabaseConnection databaseConnection) {
-        return new UserService(databaseConnection);
+        return new UserServiceImpl(databaseConnection);
     }
 
     @Bean
