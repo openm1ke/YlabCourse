@@ -6,6 +6,4 @@
 
     <!-- Сканирование компонентов -->
     <context:component-scan base-package="ru.ylib" />
-
-    <bean id="databaseConnection" class="ru.ylib.utils.DatabaseConnection"/>
 </beans>

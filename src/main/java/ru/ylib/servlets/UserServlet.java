@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import ru.ylib.dto.UserDTO;
@@ -22,10 +21,8 @@ public class UserServlet extends HttpServlet {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
-    public void init() throws ServletException {
+    public void init() {
         SpringBeanAutowiringSupport.processInjectionBasedOnCurrentContext(this);
-//        ApplicationContext context = new AnnotationConfigApplicationContext(AopConfig.class);
-//        userService = context.getBean(UserService.class);
     }
 
     @Override
