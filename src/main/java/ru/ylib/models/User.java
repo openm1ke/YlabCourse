@@ -14,7 +14,14 @@ public class User {
     private String login;
     private String password;
     private UserRole role;
-
+    // пришлось добавить коструктор с айди для корректной работы маппера
+    @Builder
+    public User(long id, String login, String password, UserRole role) {
+        this.id = id;
+        this.login = login;
+        this.password = password;
+        this.role = role;
+    }
     @Builder
     public User(String login, String password, UserRole role) {
         this.login = login;
