@@ -1,5 +1,6 @@
 package ru.ylib.dao;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.ylib.models.User;
 import ru.ylib.models.UserRole;
@@ -12,6 +13,7 @@ public class UserDAO {
 
     private final DataSource dataSource;
 
+    @Autowired
     public UserDAO(DataSource dataSource) {
         this.dataSource = dataSource;
     }
@@ -37,6 +39,7 @@ public class UserDAO {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
+            System.out.println(statement.toString());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 User user = new User();
@@ -44,6 +47,7 @@ public class UserDAO {
                 user.setLogin(resultSet.getString("login"));
                 user.setPassword(resultSet.getString("password"));
                 user.setRole(UserRole.valueOf(resultSet.getString("role")));
+                System.out.println(user.toString());
                 return user;
             }
         }

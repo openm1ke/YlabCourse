@@ -11,12 +11,18 @@ import org.springframework.web.servlet.DispatcherServlet;
 public class MainWebAppInitializer implements WebApplicationInitializer {
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-
+        // Создаем и настраиваем Spring-контекст
         AnnotationConfigWebApplicationContext context = new AnnotationConfigWebApplicationContext();
-        context.scan("ru.ylib");
+        context.register(AppConfig.class); // Регистрация конфигурационного класса
+
+        // Добавляем ContextLoaderListener для загрузки контекста
         servletContext.addListener(new ContextLoaderListener(context));
+
+        // Настраиваем DispatcherServlet
         ServletRegistration.Dynamic dispatcher = servletContext.addServlet("mvc", new DispatcherServlet(context));
         dispatcher.setLoadOnStartup(1);
-        dispatcher.addMapping("/*");
+        dispatcher.addMapping("/*"); // Все запросы будут направляться в DispatcherServlet
+
+        System.out.println("DispatcherServlet initialized and mapped");
     }
 }

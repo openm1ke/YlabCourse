@@ -4,14 +4,13 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.ylib.dto.UserDTO;
 import ru.ylib.mappers.UserMapper;
 import ru.ylib.models.User;
 import ru.ylib.services.UserService;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
@@ -20,10 +19,15 @@ public class UserController {
     private final UserMapper userMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUserById(@PathVariable long id) {
+    public ResponseEntity<UserDTO> getUserById(@PathVariable("id") long id) {
+        System.out.println("Received GET request for user with ID: " + id);
+        if(id <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
         User user = userService.read(id);
         if (user != null) {
             UserDTO userDTO = userMapper.userToUserDTO(user);
+            System.out.println("User found: " + userDTO);
             return ResponseEntity.ok(userDTO);
         } else {
             return ResponseEntity.notFound().build();
@@ -39,7 +43,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable long id, @RequestBody @Valid UserDTO userDTO) {
+    public ResponseEntity<UserDTO> updateUser(@PathVariable("id") long id, @RequestBody @Valid UserDTO userDTO) {
         User user = userMapper.userDTOToUser(userDTO);
         user.setId(id);
         User updatedUser = userService.update(user);
@@ -52,7 +56,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable("id") long id) {
         try {
             userService.delete(id);
             return ResponseEntity.noContent().build();
