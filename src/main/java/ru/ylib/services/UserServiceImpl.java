@@ -2,63 +2,54 @@ package ru.ylib.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.ylib.dto.UserDTO;
+import ru.ylib.dao.UserDAO;
 import ru.ylib.models.User;
-import ru.ylib.repositories.UserRepository;
-import ru.ylib.mappers.UserMapper;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.sql.SQLException;
 
 @Service
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
-    private final UserMapper userMapper;
+    private final UserDAO userDAO;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, UserMapper userMapper) {
-        this.userRepository = userRepository;
-        this.userMapper = userMapper;
+    public UserServiceImpl(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
 
     @Override
-    public UserDTO create(UserDTO userDTO) {
-        User user = userMapper.userDTOToUser(userDTO);
-        user = userRepository.save(user);
-        return userMapper.userToUserDTO(user);
+    public User create(User user) {
+        try {
+            return userDAO.create(user);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error creating user", e);
+        }
     }
 
     @Override
-    public UserDTO read(long id) {
-        return userRepository.findById(id)
-                .map(userMapper::userToUserDTO)
-                .orElse(null);
+    public User read(long id) {
+        try {
+            return userDAO.findById(id);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error reading user", e);
+        }
     }
 
     @Override
-    public UserDTO update(UserDTO userDTO) {
-        User user = userMapper.userDTOToUser(userDTO);
-        user = userRepository.save(user);
-        return userMapper.userToUserDTO(user);
+    public User update(User user) {
+        try {
+            return userDAO.update(user);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error updating user", e);
+        }
     }
 
     @Override
     public void delete(long id) {
-        userRepository.deleteById(id);
-    }
-
-    @Override
-    public List<UserDTO> readAll() {
-        return userRepository.findAll()
-                .stream()
-                .map(userMapper::userToUserDTO)
-                .collect(Collectors.toList());
-    }
-
-    public Optional<UserDTO> findByLogin(String login) {
-        return Optional.ofNullable(userRepository.findByLogin(login))
-                .map(userMapper::userToUserDTO);
+        try {
+            userDAO.delete(id);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting user", e);
+        }
     }
 }

@@ -1,56 +1,63 @@
 package ru.ylib.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.ylib.dto.UserDTO;
+import ru.ylib.mappers.UserMapper;
+import ru.ylib.models.User;
 import ru.ylib.services.UserService;
 
-import jakarta.validation.Valid;
-import java.util.List;
-
-@RestController
+@Controller
+@RequiredArgsConstructor
 @RequestMapping("/users")
-@Validated
 public class UserController {
 
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+    @GetMapping("/{id}")
+    public ResponseEntity<UserDTO> getUserById(@PathVariable long id) {
+        User user = userService.read(id);
+        if (user != null) {
+            UserDTO userDTO = userMapper.userToUserDTO(user);
+            return ResponseEntity.ok(userDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PostMapping
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody UserDTO userDTO) {
-        UserDTO createdUser = userService.create(userDTO);
-        return new ResponseEntity<>(createdUser, HttpStatus.CREATED);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<UserDTO> getUser(@PathVariable long id) {
-        UserDTO userDTO = userService.read(id);
-        return userDTO != null ? new ResponseEntity<>(userDTO, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    @GetMapping
-    public ResponseEntity<List<UserDTO>> getAllUsers() {
-        List<UserDTO> users = userService.readAll();
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    public ResponseEntity<UserDTO> createUser(@RequestBody @Valid UserDTO userDTO) {
+        User user = userMapper.userDTOToUser(userDTO);
+        User createdUser = userService.create(user);
+        UserDTO createdUserDTO = userMapper.userToUserDTO(createdUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdUserDTO);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserDTO> updateUser(@PathVariable long id, @Valid @RequestBody UserDTO userDTO) {
-        userDTO.setId(id);
-        UserDTO updatedUser = userService.update(userDTO);
-        return updatedUser != null ? new ResponseEntity<>(updatedUser, HttpStatus.OK) : new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<UserDTO> updateUser(@PathVariable long id, @RequestBody @Valid UserDTO userDTO) {
+        User user = userMapper.userDTOToUser(userDTO);
+        user.setId(id);
+        User updatedUser = userService.update(user);
+        if (updatedUser != null) {
+            UserDTO updatedUserDTO = userMapper.userToUserDTO(updatedUser);
+            return ResponseEntity.ok(updatedUserDTO);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable long id) {
-        userService.delete(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        try {
+            userService.delete(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 }

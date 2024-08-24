@@ -1,34 +1,47 @@
 package ru.ylib.config;
 
-import org.mapstruct.factory.Mappers;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import liquibase.Liquibase;
+import liquibase.database.Database;
+import liquibase.database.DatabaseFactory;
+import liquibase.database.jvm.JdbcConnection;
+import liquibase.exception.LiquibaseException;
+import liquibase.resource.ClassLoaderResourceAccessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import ru.ylib.mappers.UserMapper;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 @Configuration
 @ComponentScan(basePackages = "ru.ylib")
-@PropertySource("classpath:application.yml")
 public class AppConfig {
 
     @Bean
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setUrl("spring.datasource.url");
-        dataSource.setUsername("spring.datasource.username");
-        dataSource.setPassword("spring.datasource.password");
-        dataSource.setDriverClassName("spring.datasource.driver-class-name");
-        return dataSource;
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://172.17.150.42:5432/postgres");
+        config.setUsername("postgres");
+        config.setPassword("postgres");
+        config.setDriverClassName("org.postgresql.Driver");
+        return new HikariDataSource(config);
     }
 
     @Bean
-    public UserMapper userMapper() {
-        return Mappers.getMapper(UserMapper.class);
+    public Liquibase liquibase(DataSource dataSource) throws SQLException, LiquibaseException {
+        Connection connection = dataSource.getConnection();
+        Database database = DatabaseFactory.getInstance()
+                .findCorrectDatabaseImplementation(new JdbcConnection(connection));
+
+        Liquibase liquibase = new Liquibase("db/changelog/db.changelog-master.yaml",
+                new ClassLoaderResourceAccessor(), database);
+
+        liquibase.update();
+        return liquibase;
     }
 
-    // Другие необходимые бины
 }
