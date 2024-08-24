@@ -4,26 +4,20 @@
          xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
                              http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
          version="3.1">
-
-    <!-- Инициализация Spring ContextLoaderListener -->
+    <!-- Spring ContextLoaderListener для инициализации Spring контекста -->
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
     </listener>
 
-    <!-- Настройка Spring контекста -->
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/applicationContext.xml</param-value>
-    </context-param>
-
+    <!-- Spring DispatcherServlet для обработки HTTP-запросов -->
     <servlet>
-        <servlet-name>userServlet</servlet-name>
-        <servlet-class>ru.ylib.servlets.UserServlet</servlet-class>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>userServlet</servlet-name>
-        <url-pattern>/users/*</url-pattern>
+        <servlet-name>dispatcherServlet</servlet-name>
+        <url-pattern>/</url-pattern>
     </servlet-mapping>
 </web-app>

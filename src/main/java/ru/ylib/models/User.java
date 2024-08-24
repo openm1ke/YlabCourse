@@ -1,28 +1,27 @@
 package ru.ylib.models;
 
+import jakarta.persistence.*;
 import lombok.*;
 
 /**
  * Represents a user in the system.
  */
-@Getter
-@Setter
-@ToString
-@RequiredArgsConstructor
+@Entity
+@Table(name = "app.user")
+@Data
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String login;
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private UserRole role;
     // пришлось добавить коструктор с айди для корректной работы маппера
-    @Builder
-    public User(long id, String login, String password, UserRole role) {
-        this.id = id;
-        this.login = login;
-        this.password = password;
-        this.role = role;
+    public User() {
     }
-    @Builder
+
     public User(String login, String password, UserRole role) {
         this.login = login;
         this.password = password;
