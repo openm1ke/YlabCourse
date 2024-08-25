@@ -15,14 +15,4 @@ public class UserDTO {
     private String password;
     @NotNull(message = "Role cannot be null")
     private String role;
-
-    public UserDTO() {
-    }
-
-    public UserDTO(long id, String login, String password, String role) {
-        this.id = id;
-        this.login = login;
-        this.password = password;
-        this.role = role;
-    }
 }

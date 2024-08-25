@@ -35,7 +35,7 @@ public class AppConfig implements WebMvcConfigurer {
     @Bean
     public DataSource dataSource() {
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://localhost:5432/postgres");
+        config.setJdbcUrl("jdbc:postgresql://172.17.150.42:5432/postgres");
         config.setUsername("postgres");
         config.setPassword("postgres");
         config.setDriverClassName("org.postgresql.Driver");
@@ -59,7 +59,4 @@ public class AppConfig implements WebMvcConfigurer {
         liquibase.update();
         return liquibase;
     }
-
-
-
 }
