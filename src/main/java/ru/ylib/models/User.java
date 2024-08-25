@@ -1,28 +1,29 @@
 package ru.ylib.models;
 
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-/**
- * Represents a user in the system.
- */
-@Getter
 @Setter
+@Getter
 @ToString
-@RequiredArgsConstructor
 public class User {
+
     private long id;
     private String login;
     private String password;
     private UserRole role;
-    // пришлось добавить коструктор с айди для корректной работы маппера
-    @Builder
+
+    public User() {
+    }
+
     public User(long id, String login, String password, UserRole role) {
         this.id = id;
         this.login = login;
         this.password = password;
         this.role = role;
     }
-    @Builder
+
     public User(String login, String password, UserRole role) {
         this.login = login;
         this.password = password;

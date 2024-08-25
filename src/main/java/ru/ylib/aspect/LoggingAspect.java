@@ -1,4 +1,4 @@
-package ru.ylib.aspects;
+package ru.ylib.aspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @EnableAspectJAutoProxy
-public class AuditAspect {
+public class LoggingAspect {
 
     @Around("execution(* ru.ylib.services.*.*(..))")
     public Object audit(ProceedingJoinPoint joinPoint) throws Throwable {

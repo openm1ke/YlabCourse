@@ -6,11 +6,13 @@ import lombok.Data;
 @Data
 public class OrderDTO {
     private long id;
-    @NotNull
-    private long userId;
+    private String status;
     @NotNull
     private long carId;
     @NotNull
+    private long userId;
+    private String type;
+    @NotNull
     private String orderDate;
-    private String status; // Например, "PENDING", "COMPLETED" и т.д.
+
 }
