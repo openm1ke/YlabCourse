@@ -39,7 +39,6 @@ public class UserDAO {
         try (Connection connection = dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setLong(1, id);
-            System.out.println(statement.toString());
             ResultSet resultSet = statement.executeQuery();
             if (resultSet.next()) {
                 User user = new User();
@@ -47,7 +46,6 @@ public class UserDAO {
                 user.setLogin(resultSet.getString("login"));
                 user.setPassword(resultSet.getString("password"));
                 user.setRole(UserRole.valueOf(resultSet.getString("role")));
-                System.out.println(user.toString());
                 return user;
             }
         }

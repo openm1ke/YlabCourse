@@ -1,5 +1,6 @@
 package ru.ylib.services;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.ylib.dao.UserDAO;
@@ -7,6 +8,7 @@ import ru.ylib.models.User;
 
 import java.sql.SQLException;
 
+@Slf4j
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -14,6 +16,7 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     public UserServiceImpl(UserDAO userDAO) {
+        log.info("UserService created");
         this.userDAO = userDAO;
     }
 
@@ -28,6 +31,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User read(long id) {
+        log.info("Received GET request for user with ID: " + id);
         try {
             return userDAO.findById(id);
         } catch (SQLException e) {

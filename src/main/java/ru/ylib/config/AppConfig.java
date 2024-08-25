@@ -39,6 +39,11 @@ public class AppConfig implements WebMvcConfigurer {
         config.setUsername("postgres");
         config.setPassword("postgres");
         config.setDriverClassName("org.postgresql.Driver");
+        config.setPoolName("HikariCP-Pool");
+        config.setMaximumPoolSize(10);
+        config.setConnectionTimeout(30000);
+        config.setIdleTimeout(600000);
+        config.setMaxLifetime(1800000);
         return new HikariDataSource(config);
     }
 
@@ -54,5 +59,7 @@ public class AppConfig implements WebMvcConfigurer {
         liquibase.update();
         return liquibase;
     }
+
+
 
 }

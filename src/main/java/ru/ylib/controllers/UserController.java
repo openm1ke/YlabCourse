@@ -2,6 +2,7 @@ package ru.ylib.controllers;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,23 +12,26 @@ import ru.ylib.models.User;
 import ru.ylib.services.UserService;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
     private final UserMapper userMapper;
 
+    @Autowired
+    public UserController(UserService userService, UserMapper userMapper) {
+        this.userService = userService;
+        this.userMapper = userMapper;
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable("id") long id) {
-        System.out.println("Received GET request for user with ID: " + id);
         if(id <= 0) {
             return ResponseEntity.badRequest().build();
         }
         User user = userService.read(id);
         if (user != null) {
             UserDTO userDTO = userMapper.userToUserDTO(user);
-            System.out.println("User found: " + userDTO);
             return ResponseEntity.ok(userDTO);
         } else {
             return ResponseEntity.notFound().build();
